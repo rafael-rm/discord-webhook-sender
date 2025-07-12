@@ -23,7 +23,7 @@ public class DiscordWebhookClient : IDiscordWebhookClient
         _httpClient = httpClient ?? new HttpClient();
         _jsonOptions = new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
     }

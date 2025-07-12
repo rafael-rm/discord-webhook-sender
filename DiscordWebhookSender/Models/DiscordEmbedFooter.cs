@@ -17,6 +17,5 @@ public class DiscordEmbedFooter
     /// Gets or sets the URL of the footer icon.
     /// This is displayed as a small icon next to the footer text.
     /// </summary>
-    [JsonPropertyName("icon_url")]
     public string? IconUrl { get; set; }
 }

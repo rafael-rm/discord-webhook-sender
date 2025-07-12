@@ -22,6 +22,5 @@ public class DiscordEmbedAuthor
     /// Gets or sets the URL of the author's avatar icon.
     /// This is displayed as a small icon next to the author name.
     /// </summary>
-    [JsonPropertyName("icon_url")]
     public string? IconUrl { get; set; }
 }

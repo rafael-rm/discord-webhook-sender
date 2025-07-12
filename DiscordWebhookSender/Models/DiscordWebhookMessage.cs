@@ -33,6 +33,5 @@ public class DiscordWebhookMessage
     /// <summary>
     /// Gets or sets the URL of the avatar image that will override the webhook's default avatar.
     /// </summary>
-    [JsonPropertyName("avatar_url")]
     public string? AvatarUrl { get; set; }
 }
