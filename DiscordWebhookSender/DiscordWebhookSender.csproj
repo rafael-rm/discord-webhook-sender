@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>DiscordWebhookSender</PackageId>
+        <RepositoryUrl>https://github.com/rafael-rm/discord-webhook-sender</RepositoryUrl>
+        <LangVersion>12</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <vMinor>$([System.DateTime]::Now.ToString("yyMM"))</vMinor>
+        <vBuild>$([System.DateTime]::Now.ToString("dHH"))</vBuild>
+        <vRevision>$([System.DateTime]::Now.ToString("mm"))</vRevision>
+        <VersionPrefix>1.$(vMinor).$(vBuild).$(vRevision)</VersionPrefix>
+        <PackageVersion>1.$(vMinor).$(vBuild).$(vRevision)</PackageVersion>
+        <AssemblyVersion>1.$(vMinor).$(vBuild).$(vRevision)</AssemblyVersion>
+    </PropertyGroup>
+
+</Project>
