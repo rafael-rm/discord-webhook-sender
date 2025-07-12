@@ -32,7 +32,7 @@ internal abstract class Program
             Embeds = [embed]
         };
 
-        var client = new DiscordWebhookClient();
+        var client = DiscordWebhookClient.Get();
         await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", message);
     }
 }

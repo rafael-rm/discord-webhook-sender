@@ -12,7 +12,7 @@ A .NET library for sending Discord webhooks with rich embeds and message formatt
 - **Media Support**: Add images and thumbnails to embeds
 - **Author & Footer**: Customize embed author and footer information
 - **Timestamp Support**: Add timestamps to embeds
-- **Error Handling**: Proper exception handling for failed webhook requests
+- **Singleton Webhook Client**: Thread-safe singleton pattern to ensure only one HTTP client instance
 
 ## Installation
 
@@ -51,7 +51,7 @@ var message = new DiscordWebhookMessage
 };
 
 // Send the webhook
-var client = new DiscordWebhookClient();
+var client = DiscordWebhookClient.Get();
 await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", message);
 ```
 
@@ -59,10 +59,10 @@ await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", message);
 
 ### DiscordWebhookClient
 
-The main client for sending Discord webhooks.
+The main client for sending Discord webhooks. Implements the Singleton pattern to ensure only one instance exists.
 
 ```csharp
-var client = new DiscordWebhookClient();
+var client = DiscordWebhookClient.Get();
 await client.SendAsync(webhookUrl, message, cancellationToken);
 ```
 
@@ -123,7 +123,7 @@ var message = new DiscordWebhookMessage
     Content = "Hello, Discord!"
 };
 
-var client = new DiscordWebhookClient();
+var client = DiscordWebhookClient.Get();
 await client.SendAsync(webhookUrl, message);
 ```
 
@@ -152,26 +152,7 @@ var embed = new DiscordEmbedBuilder()
     .Build();
 ```
 
-## Error Handling
 
-The library throws appropriate exceptions for common errors:
-
-```csharp
-try
-{
-    await client.SendAsync(webhookUrl, message);
-}
-catch (ArgumentException ex)
-{
-    // Invalid webhook URL or message
-    Console.WriteLine($"Invalid input: {ex.Message}");
-}
-catch (HttpRequestException ex)
-{
-    // HTTP request failed
-    Console.WriteLine($"Request failed: {ex.Message}");
-}
-```
 
 ## Requirements
 

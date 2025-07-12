@@ -8,17 +8,21 @@ namespace DiscordWebhookSender;
 /// <summary>
 /// Client for sending Discord webhook messages.
 /// Provides functionality to send messages and embeds to Discord channels via webhooks.
+/// Implements the Singleton pattern to ensure only one instance exists.
 /// </summary>
 public class DiscordWebhookClient : IDiscordWebhookClient
 {
+    private static DiscordWebhookClient? _instance;
+    private static readonly object _lock = new object();
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _jsonOptions;
 
     /// <summary>
-    /// Initializes a new instance of the DiscordWebhookClient class.
+    /// Private constructor to prevent direct instantiation.
+    /// Use the Get() method to obtain the singleton instance.
     /// </summary>
     /// <param name="httpClient">Optional HttpClient instance. If not provided, a new instance will be created.</param>
-    public DiscordWebhookClient(HttpClient? httpClient = null)
+    private DiscordWebhookClient(HttpClient? httpClient = null)
     {
         _httpClient = httpClient ?? new HttpClient();
         _jsonOptions = new JsonSerializerOptions
@@ -26,6 +30,27 @@ public class DiscordWebhookClient : IDiscordWebhookClient
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
+    }
+
+    /// <summary>
+    /// Gets the singleton instance of DiscordWebhookClient.
+    /// Creates a new instance if one doesn't exist.
+    /// </summary>
+    /// <param name="httpClient">Optional HttpClient instance. Only used when creating a new instance.</param>
+    /// <returns>The singleton instance of DiscordWebhookClient.</returns>
+    public static DiscordWebhookClient Get(HttpClient? httpClient = null)
+    {
+        if (_instance == null)
+        {
+            lock (_lock)
+            {
+                if (_instance == null)
+                {
+                    _instance = new DiscordWebhookClient(httpClient);
+                }
+            }
+        }
+        return _instance;
     }
 
     /// <summary>
