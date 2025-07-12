@@ -11,6 +11,9 @@
     </PropertyGroup>
 
     <PropertyGroup>
+        <Authors>Rafael Rodrigues</Authors>
+        <Description>A lightweight and easy-to-use .NET client for sending messages and rich embeds to Discord channels via webhooks. Supports full message customization including content, embeds, username, avatar, and TTS.</Description>
+        <PackageTags>discord;webhook;bot;integration;automation;csharp;dotnet</PackageTags>
         <vMinor>$([System.DateTime]::Now.ToString("yyMM"))</vMinor>
         <vBuild>$([System.DateTime]::Now.ToString("dHH"))</vBuild>
         <vRevision>$([System.DateTime]::Now.ToString("mm"))</vRevision>
