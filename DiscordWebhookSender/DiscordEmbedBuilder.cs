@@ -53,6 +53,17 @@ public class DiscordEmbedBuilder
         _embed.Timestamp = timestamp;
         return this;
     }
+    
+    /// <summary>
+    /// Sets the timestamp of the embed using a DateTime value.
+    /// /// </summary>
+    /// <param name="dateTime">The DateTime to convert to a DateTimeOffset for the embed timestamp.</param>
+    /// <returns>The current DiscordEmbedBuilder instance for method chaining.</returns>
+    public DiscordEmbedBuilder WithTimestamp(DateTime dateTime)
+    {
+        _embed.Timestamp = new DateTimeOffset(dateTime);
+        return this;
+    }
 
     /// <summary>
     /// Sets the color of the embed using an integer value.
