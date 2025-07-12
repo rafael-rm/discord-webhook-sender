@@ -5,11 +5,19 @@ using DiscordWebhookSender.Models;
 
 namespace DiscordWebhookSender;
 
+/// <summary>
+/// Client for sending Discord webhook messages.
+/// Provides functionality to send messages and embeds to Discord channels via webhooks.
+/// </summary>
 public class DiscordWebhookClient : IDiscordWebhookClient
 {
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _jsonOptions;
 
+    /// <summary>
+    /// Initializes a new instance of the DiscordWebhookClient class.
+    /// </summary>
+    /// <param name="httpClient">Optional HttpClient instance. If not provided, a new instance will be created.</param>
     public DiscordWebhookClient(HttpClient? httpClient = null)
     {
         _httpClient = httpClient ?? new HttpClient();
@@ -20,6 +28,16 @@ public class DiscordWebhookClient : IDiscordWebhookClient
         };
     }
 
+    /// <summary>
+    /// Sends a Discord webhook message asynchronously.
+    /// </summary>
+    /// <param name="webhookUrl">The Discord webhook URL to send the message to.</param>
+    /// <param name="message">The Discord webhook message to send.</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous send operation.</returns>
+    /// <exception cref="ArgumentException">Thrown when webhookUrl is null, empty, or whitespace.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when message is null.</exception>
+    /// <exception cref="HttpRequestException">Thrown when the HTTP request fails or returns an error status code.</exception>
     public async Task SendAsync(string webhookUrl, DiscordWebhookMessage message, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(webhookUrl))
