@@ -24,10 +24,12 @@
     
     <ItemGroup>
         <None Include="..\README.md" Pack="true" PackagePath="" />
+        <None Include="..\LICENSE" Pack="true" PackagePath="" />
     </ItemGroup>
     
     <PropertyGroup>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
     </PropertyGroup>
     
 </Project>
