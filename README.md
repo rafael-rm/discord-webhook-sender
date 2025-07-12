@@ -74,7 +74,8 @@ Fluent API for building Discord embeds.
 - `WithTitle(string title)` - Set the embed title
 - `WithDescription(string description)` - Set the embed description
 - `WithUrl(string url)` - Set the embed URL
-- `WithTimestamp(DateTimeOffset timestamp)` - Set the embed timestamp
+- `WithTimestamp(DateTimeOffset timestamp)` - Set the embed timestamp using DateTimeOffset
+- `WithTimestamp(DateTime dateTime)` - Set the embed timestamp using DateTime (converted to DateTimeOffset)
 
 #### Color Methods
 - `WithColor(int color)` - Set color using integer value
@@ -149,6 +150,21 @@ var embed = new DiscordEmbedBuilder()
     .AddField("Memory Usage", "67%", true)
     .AddField("Disk Space", "23%", true)
     .AddField("Notes", "All systems operational", false)
+    .Build();
+```
+
+### Timestamp Examples
+```csharp
+// Using DateTimeOffset (recommended for UTC timestamps)
+var embed1 = new DiscordEmbedBuilder()
+    .WithTitle("Event Log")
+    .WithTimestamp(DateTimeOffset.UtcNow)
+    .Build();
+
+// Using DateTime (automatically converted to DateTimeOffset)
+var embed2 = new DiscordEmbedBuilder()
+    .WithTitle("Local Event")
+    .WithTimestamp(DateTime.Now)
     .Build();
 ```
 
