@@ -1,7 +1,7 @@
-using DiscordWebhookSender.Exceptions;
-using DiscordWebhookSender.Models;
+using DiscordWebhookSender.Core.Exceptions;
+using DiscordWebhookSender.Core.Models;
 
-namespace DiscordWebhookSender.Validation;
+namespace DiscordWebhookSender.Core.Validation;
 
 /// <summary>
 /// Validates Discord webhook messages and embeds against Discord's API limits and constraints.

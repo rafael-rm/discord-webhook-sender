@@ -1,7 +1,7 @@
-﻿using DiscordWebhookSender;
-using DiscordWebhookSender.Models;
+﻿using DiscordWebhookSender.Core;
+using DiscordWebhookSender.Core.Models;
 
-namespace ConsoleApp;
+namespace DiscordWebhookSender.Console;
 
 internal abstract class DiscordProgram
 {

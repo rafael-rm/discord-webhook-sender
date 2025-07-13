@@ -1,11 +1,11 @@
 ﻿using System.Text;
 using System.Text.Json;
-using DiscordWebhookSender.Interfaces;
-using DiscordWebhookSender.Models;
-using DiscordWebhookSender.Validation;
-using DiscordWebhookSender.Exceptions;
+using DiscordWebhookSender.Core.Exceptions;
+using DiscordWebhookSender.Core.Interfaces;
+using DiscordWebhookSender.Core.Models;
+using DiscordWebhookSender.Core.Validation;
 
-namespace DiscordWebhookSender;
+namespace DiscordWebhookSender.Core;
 
 /// <summary>
 /// Client for sending Discord webhook messages.

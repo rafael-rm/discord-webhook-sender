@@ -1,4 +1,4 @@
-namespace DiscordWebhookSender.Exceptions;
+namespace DiscordWebhookSender.Core.Exceptions;
 
 /// <summary>
 /// Exception thrown when Discord webhook message validation fails.

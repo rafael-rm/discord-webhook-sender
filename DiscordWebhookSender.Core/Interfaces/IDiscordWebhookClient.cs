@@ -1,6 +1,6 @@
-﻿using DiscordWebhookSender.Models;
+﻿using DiscordWebhookSender.Core.Models;
 
-namespace DiscordWebhookSender.Interfaces;
+namespace DiscordWebhookSender.Core.Interfaces;
 
 /// <summary>
 /// Interface for Discord webhook client implementations.

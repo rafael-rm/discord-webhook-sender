@@ -1,4 +1,4 @@
-﻿namespace DiscordWebhookSender.Models;
+﻿namespace DiscordWebhookSender.Core.Models;
 
 /// <summary>
 /// Represents the author information for a Discord embed.

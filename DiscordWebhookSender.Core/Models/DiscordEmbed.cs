@@ -1,4 +1,4 @@
-﻿namespace DiscordWebhookSender.Models;
+﻿namespace DiscordWebhookSender.Core.Models;
 
 /// <summary>
 /// Represents a Discord embed that can be included in a webhook message.

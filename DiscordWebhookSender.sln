@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{F5101CAB-EC4C-4711-9226-AF17CE986EFA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordWebhookSender.Console", "DiscordWebhookSender.Console\DiscordWebhookSender.Console.csproj", "{F5101CAB-EC4C-4711-9226-AF17CE986EFA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordWebhookSender", "DiscordWebhookSender\DiscordWebhookSender.csproj", "{5C990C77-92CC-4F9A-AE07-089011FEBAB2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordWebhookSender.Core", "DiscordWebhookSender.Core\DiscordWebhookSender.Core.csproj", "{5C990C77-92CC-4F9A-AE07-089011FEBAB2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

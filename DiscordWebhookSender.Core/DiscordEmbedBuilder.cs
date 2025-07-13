@@ -1,8 +1,8 @@
-using DiscordWebhookSender.Models;
-using DiscordWebhookSender.Validation;
-using DiscordWebhookSender.Exceptions;
+using DiscordWebhookSender.Core.Exceptions;
+using DiscordWebhookSender.Core.Models;
+using DiscordWebhookSender.Core.Validation;
 
-namespace DiscordWebhookSender;
+namespace DiscordWebhookSender.Core;
 
 /// <summary>
 /// Fluent builder for creating Discord embeds.

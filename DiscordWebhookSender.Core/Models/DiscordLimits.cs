@@ -1,4 +1,4 @@
-namespace DiscordWebhookSender.Models;
+namespace DiscordWebhookSender.Core.Models;
 
 /// <summary>
 /// Contains Discord API limits and constraints for webhook messages and embeds.
