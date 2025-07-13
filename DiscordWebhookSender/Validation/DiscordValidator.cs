@@ -82,6 +82,11 @@ public static class DiscordValidator
             totalLength += embed.Description.Length;
         }
 
+        if (!string.IsNullOrEmpty(embed.Url))
+        {
+            ValidateUrl(embed.Url, "Embed URL");
+        }
+
         if (embed.Author != null)
         {
             if (!string.IsNullOrEmpty(embed.Author.Name))
@@ -94,6 +99,16 @@ public static class DiscordValidator
                 }
                 totalLength += embed.Author.Name.Length;
             }
+
+            if (!string.IsNullOrEmpty(embed.Author.Url))
+            {
+                ValidateUrl(embed.Author.Url, "Author URL");
+            }
+
+            if (!string.IsNullOrEmpty(embed.Author.IconUrl))
+            {
+                ValidateUrl(embed.Author.IconUrl, "Author icon URL");
+            }
         }
 
         if (embed.Footer != null && !string.IsNullOrEmpty(embed.Footer.Text))
@@ -105,6 +120,21 @@ public static class DiscordValidator
                     $"Current length: {embed.Footer.Text.Length} characters.");
             }
             totalLength += embed.Footer.Text.Length;
+        }
+
+        if (embed.Footer != null && !string.IsNullOrEmpty(embed.Footer.IconUrl))
+        {
+            ValidateUrl(embed.Footer.IconUrl, "Footer icon URL");
+        }
+
+        if (embed.Image != null && !string.IsNullOrEmpty(embed.Image.Url))
+        {
+            ValidateUrl(embed.Image.Url, "Image URL");
+        }
+
+        if (embed.Thumbnail != null && !string.IsNullOrEmpty(embed.Thumbnail.Url))
+        {
+            ValidateUrl(embed.Thumbnail.Url, "Thumbnail URL");
         }
 
         if (embed.Fields != null)
@@ -167,6 +197,24 @@ public static class DiscordValidator
         }
         totalLength += field.Value.Length;
     }
+
+    /// <summary>
+    /// Validates a URL string.
+    /// </summary>
+    /// <param name="url">The URL to validate.</param>
+    /// <param name="urlName">The name of the URL for error messages.</param>
+    /// <exception cref="DiscordValidationException">Thrown when the URL is invalid.</exception>
+    private static void ValidateUrl(string url, string urlName)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            throw new DiscordValidationException($"{urlName} cannot be null, empty, or whitespace.");
+
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || 
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new DiscordValidationException($"{urlName} must be a valid HTTP or HTTPS URL: '{url}'");
+        }
+    }
     
     /// <summary>
     /// Validates the webhook URL.
@@ -177,5 +225,21 @@ public static class DiscordValidator
     {
         if (string.IsNullOrWhiteSpace(webhookUrl))
             throw new DiscordValidationException("Webhook URL cannot be null, empty, or whitespace.");
+    }
+
+    /// <summary>
+    /// Validates a hex color string format.
+    /// </summary>
+    /// <param name="hexColor">The hex color string to validate.</param>
+    /// <exception cref="DiscordValidationException">Thrown when the hex color format is invalid.</exception>
+    public static void ValidateHexColor(string hexColor)
+    {
+        if (string.IsNullOrWhiteSpace(hexColor))
+            throw new DiscordValidationException("Hex color cannot be null or whitespace.");
+
+        var hex = hexColor.TrimStart('#');
+
+        if (!int.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out _))
+            throw new DiscordValidationException($"Invalid hex color format: '{hexColor}'. Expected format: '#RRGGBB' or 'RRGGBB'.");
     }
 } 
