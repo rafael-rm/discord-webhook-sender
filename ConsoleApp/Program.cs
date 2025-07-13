@@ -34,5 +34,7 @@ internal abstract class Program
 
         var client = DiscordWebhookClient.Get();
         await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", message);
+        await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", embed);
+        await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", "This is a simple text message");
     }
 }

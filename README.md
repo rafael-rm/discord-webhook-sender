@@ -22,6 +22,30 @@ dotnet add package DiscordWebhookSender
 
 ## Quick Start
 
+### Simple Text Message
+```csharp
+using DiscordWebhookSender;
+
+var client = DiscordWebhookClient.Get();
+await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", "Hello, Discord!");
+```
+
+### Simple Embed
+```csharp
+using DiscordWebhookSender;
+using DiscordWebhookSender.Models;
+
+var embed = new DiscordEmbedBuilder()
+    .WithTitle("🚀 Deploy Completed!")
+    .WithDescription("The new application version has been published.")
+    .WithColor(DiscordEmbedColor.Green)
+    .Build();
+
+var client = DiscordWebhookClient.Get();
+await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", embed);
+```
+
+### Advanced Message with Customization
 ```csharp
 using DiscordWebhookSender;
 using DiscordWebhookSender.Models;
@@ -61,9 +85,22 @@ await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", message);
 
 The main client for sending Discord webhooks. Implements the Singleton pattern to ensure only one instance exists.
 
+#### Usage
 ```csharp
 var client = DiscordWebhookClient.Get();
+```
+
+#### Methods
+
+```csharp
+// Send a complete DiscordWebhookMessage
 await client.SendAsync(webhookUrl, message, cancellationToken);
+
+// Send a simple text message
+await client.SendAsync(webhookUrl, content, cancellationToken);
+
+// Send a single embed
+await client.SendAsync(webhookUrl, embed, cancellationToken);
 ```
 
 ### DiscordEmbedBuilder
@@ -74,6 +111,8 @@ Fluent API for building Discord embeds.
 - `WithTitle(string title)` - Set the embed title
 - `WithDescription(string description)` - Set the embed description
 - `WithUrl(string url)` - Set the embed URL
+
+#### Timestamp Methods
 - `WithTimestamp(DateTimeOffset timestamp)` - Set the embed timestamp using DateTimeOffset
 - `WithTimestamp(DateTime dateTime)` - Set the embed timestamp using DateTime (converted to DateTimeOffset)
 
@@ -117,18 +156,13 @@ var message = new DiscordWebhookMessage
 
 ## Examples
 
-### Simple Message
+### Simple Text Message
 ```csharp
-var message = new DiscordWebhookMessage
-{
-    Content = "Hello, Discord!"
-};
-
 var client = DiscordWebhookClient.Get();
-await client.SendAsync(webhookUrl, message);
+await client.SendAsync(webhookUrl, "Hello, Discord!");
 ```
 
-### Rich Embed with Custom Color
+### Simple Embed
 ```csharp
 var embed = new DiscordEmbedBuilder()
     .WithTitle("Alert")
@@ -136,10 +170,33 @@ var embed = new DiscordEmbedBuilder()
     .WithColor("#FF0000") // Red color
     .Build();
 
+var client = DiscordWebhookClient.Get();
+await client.SendAsync(webhookUrl, embed);
+```
+
+### Complete Message with Multiple Embeds
+```csharp
+var embed1 = new DiscordEmbedBuilder()
+    .WithTitle("System Status")
+    .WithColor(DiscordEmbedColor.Green)
+    .Build();
+
+var embed2 = new DiscordEmbedBuilder()
+    .WithTitle("Performance Metrics")
+    .AddField("CPU Usage", "45%", true)
+    .AddField("Memory Usage", "67%", true)
+    .WithColor(DiscordEmbedColor.Blue)
+    .Build();
+
 var message = new DiscordWebhookMessage
 {
-    Embeds = [embed]
+    Content = "📊 System Report",
+    Username = "System Monitor",
+    Embeds = [embed1, embed2]
 };
+
+var client = DiscordWebhookClient.Get();
+await client.SendAsync(webhookUrl, message);
 ```
 
 ### Multiple Fields
@@ -168,11 +225,9 @@ var embed2 = new DiscordEmbedBuilder()
     .Build();
 ```
 
-
-
 ## Requirements
 
-- .NET 8.0 or later
+- .NET 8.0 or .NET 9.0
 - Internet connection for webhook requests
 
 ## License
