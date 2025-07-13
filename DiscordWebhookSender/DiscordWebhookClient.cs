@@ -2,6 +2,8 @@
 using System.Text.Json;
 using DiscordWebhookSender.Interfaces;
 using DiscordWebhookSender.Models;
+using DiscordWebhookSender.Validation;
+using DiscordWebhookSender.Exceptions;
 
 namespace DiscordWebhookSender;
 
@@ -40,16 +42,11 @@ public class DiscordWebhookClient : IDiscordWebhookClient
     /// <returns>The singleton instance of DiscordWebhookClient.</returns>
     public static DiscordWebhookClient Get(HttpClient? httpClient = null)
     {
-        if (_instance == null)
-        {
-            lock (Lock)
-            {
-                if (_instance == null)
-                {
-                    _instance = new DiscordWebhookClient(httpClient);
-                }
-            }
-        }
+        if (_instance != null) return _instance;
+        
+        lock (Lock)
+            _instance ??= new DiscordWebhookClient(httpClient);
+        
         return _instance;
     }
 
@@ -62,13 +59,14 @@ public class DiscordWebhookClient : IDiscordWebhookClient
     /// <returns>A task that represents the asynchronous send operation.</returns>
     /// <exception cref="ArgumentException">Thrown when webhookUrl is null, empty, or whitespace.</exception>
     /// <exception cref="ArgumentNullException">Thrown when message is null.</exception>
+    /// <exception cref="DiscordValidationException">Thrown when message validation fails.</exception>
     /// <exception cref="HttpRequestException">Thrown when the HTTP request fails or returns an error status code.</exception>
     public async Task SendAsync(string webhookUrl, DiscordWebhookMessage message, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(webhookUrl))
             throw new ArgumentException("Webhook URL cannot be null or empty.", nameof(webhookUrl));
 
-        ArgumentNullException.ThrowIfNull(message);
+        DiscordValidator.ValidateWebhookMessage(message);
 
         var payload = JsonSerializer.Serialize(message, _jsonOptions);
         using var content = new StringContent(payload, Encoding.UTF8, "application/json");
@@ -91,10 +89,19 @@ public class DiscordWebhookClient : IDiscordWebhookClient
     /// <returns>A task that represents the asynchronous send operation.</returns>
     /// <exception cref="ArgumentException">Thrown when webhookUrl is null, empty, or whitespace.</exception>
     /// <exception cref="ArgumentNullException">Thrown when content is null.</exception>
+    /// <exception cref="DiscordValidationException">Thrown when content exceeds the maximum length of 2000 characters.</exception>
     /// <exception cref="HttpRequestException">Thrown when the HTTP request fails or returns an error status code.</exception>
     public async Task SendAsync(string webhookUrl, string content, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(content);
+        
+        if (content.Length > DiscordLimits.MaxContentLength)
+        {
+            throw new DiscordValidationException(
+                $"Message content exceeds the maximum length of {DiscordLimits.MaxContentLength} characters. " +
+                $"Current length: {content.Length} characters.");
+        }
+        
         var message = new DiscordWebhookMessage { Content = content };
         
         await SendAsync(webhookUrl, message, cancellationToken);
@@ -109,10 +116,12 @@ public class DiscordWebhookClient : IDiscordWebhookClient
     /// <returns>A task that represents the asynchronous send operation.</returns>
     /// <exception cref="ArgumentException">Thrown when webhookUrl is null, empty, or whitespace.</exception>
     /// <exception cref="ArgumentNullException">Thrown when embed is null.</exception>
+    /// <exception cref="DiscordValidationException">Thrown when embed validation fails.</exception>
     /// <exception cref="HttpRequestException">Thrown when the HTTP request fails or returns an error status code.</exception>
     public async Task SendAsync(string webhookUrl, DiscordEmbed embed, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(embed);
+        DiscordValidator.ValidateEmbed(embed);
+        
         var message = new DiscordWebhookMessage { Embeds = [embed] };
         
         await SendAsync(webhookUrl, message, cancellationToken);

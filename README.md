@@ -13,6 +13,8 @@ A .NET library for sending Discord webhooks with rich embeds and message formatt
 - **Author & Footer**: Customize embed author and footer information
 - **Timestamp Support**: Add timestamps to embeds
 - **Singleton Webhook Client**: Thread-safe singleton pattern to ensure only one HTTP client instance
+- **Discord API Validation**: Automatic validation of all Discord API limits and constraints
+- **Comprehensive Error Handling**: Detailed error messages for validation failures
 
 ## Installation
 
@@ -105,11 +107,11 @@ await client.SendAsync(webhookUrl, embed, cancellationToken);
 
 ### DiscordEmbedBuilder
 
-Fluent API for building Discord embeds.
+Fluent API for building Discord embeds with automatic validation of Discord API limits.
 
 #### Basic Methods
-- `WithTitle(string title)` - Set the embed title
-- `WithDescription(string description)` - Set the embed description
+- `WithTitle(string title)` - Set the embed title (max 256 characters)
+- `WithDescription(string description)` - Set the embed description (max 4096 characters)
 - `WithUrl(string url)` - Set the embed URL
 
 #### Timestamp Methods
@@ -126,11 +128,11 @@ Fluent API for building Discord embeds.
 - `WithThumbnail(string url)` - Add a thumbnail to the embed
 
 #### Author & Footer
-- `WithAuthor(string name, string? url, string? iconUrl)` - Set embed author
-- `WithFooter(string text, string? iconUrl)` - Set embed footer
+- `WithAuthor(string name, string? url, string? iconUrl)` - Set embed author (name max 256 characters)
+- `WithFooter(string text, string? iconUrl)` - Set embed footer (text max 2048 characters)
 
 #### Fields
-- `AddField(string name, string value, bool inline)` - Add a field to the embed
+- `AddField(string name, string value, bool inline)` - Add a field to the embed (name max 256, value max 1024, max 25 fields)
 
 ### DiscordEmbedColor Enum
 
@@ -142,17 +144,51 @@ Predefined colors for easy use:
 
 ### DiscordWebhookMessage
 
-The message model for Discord webhooks.
+The message model for Discord webhooks with automatic validation.
 
 ```csharp
 var message = new DiscordWebhookMessage
 {
-    Content = "Message content",
-    Username = "Custom Username",
+    Content = "Message content", // max 2000 characters
+    Username = "Custom Username", // max 80 characters
     AvatarUrl = "https://example.com/avatar.png",
     Tts = false,
-    Embeds = [embed1, embed2]
+    Embeds = [embed1, embed2] // max 10 embeds
 };
+```
+
+## Validation and Error Handling
+
+The library automatically validates all Discord API limits before sending messages. If any validation fails, a `DiscordValidationException` is thrown with detailed error information.
+
+### Discord API Limits
+
+- **Message Content**: Maximum 2000 characters
+- **Username**: Maximum 80 characters
+- **Embed Title**: Maximum 256 characters
+- **Embed Description**: Maximum 4096 characters
+- **Field Name**: Maximum 256 characters
+- **Field Value**: Maximum 1024 characters
+- **Footer Text**: Maximum 2048 characters
+- **Author Name**: Maximum 256 characters
+- **Fields per Embed**: Maximum 25 fields
+- **Embeds per Message**: Maximum 10 embeds
+- **Total Embed Content**: Maximum 6000 characters (sum of all text content)
+
+### Error Handling Example
+
+```csharp
+try
+{
+    var embed = new DiscordEmbedBuilder()
+        .WithTitle("This title is way too long and will exceed the 256 character limit that Discord imposes on embed titles, causing a validation exception to be thrown when the Build() method is called or when the message is sent, which means that any attempt to send this embed with such a title will fail immediately due to the hard limit enforced by the Discord API. This serves as an example of what *not* to do when setting the title of a Discord embed. Always make sure to validate title length before assigning it.")
+        .Build();
+}
+catch (DiscordValidationException ex)
+{
+    Console.WriteLine($"Validation failed: {ex.Message}");
+    // Output: Validation failed: Embed title exceeds the maximum length of 256 characters. Current length: 280 characters.
+}
 ```
 
 ## Examples

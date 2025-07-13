@@ -1,4 +1,6 @@
 ﻿using DiscordWebhookSender.Models;
+using DiscordWebhookSender.Validation;
+using DiscordWebhookSender.Exceptions;
 
 namespace DiscordWebhookSender;
 
@@ -15,8 +17,16 @@ public class DiscordEmbedBuilder
     /// </summary>
     /// <param name="title">The title text to display in the embed.</param>
     /// <returns>The current DiscordEmbedBuilder instance for method chaining.</returns>
+    /// <exception cref="DiscordValidationException">Thrown when title exceeds the maximum length of 256 characters.</exception>
     public DiscordEmbedBuilder WithTitle(string title)
     {
+        if (!string.IsNullOrEmpty(title) && title.Length > DiscordLimits.MaxTitleLength)
+        {
+            throw new DiscordValidationException(
+                $"Embed title exceeds the maximum length of {DiscordLimits.MaxTitleLength} characters. " +
+                $"Current length: {title.Length} characters.");
+        }
+        
         _embed.Title = title;
         return this;
     }
@@ -26,8 +36,16 @@ public class DiscordEmbedBuilder
     /// </summary>
     /// <param name="description">The description text to display in the embed.</param>
     /// <returns>The current DiscordEmbedBuilder instance for method chaining.</returns>
+    /// <exception cref="DiscordValidationException">Thrown when description exceeds the maximum length of 4096 characters.</exception>
     public DiscordEmbedBuilder WithDescription(string description)
     {
+        if (!string.IsNullOrEmpty(description) && description.Length > DiscordLimits.MaxDescriptionLength)
+        {
+            throw new DiscordValidationException(
+                $"Embed description exceeds the maximum length of {DiscordLimits.MaxDescriptionLength} characters. " +
+                $"Current length: {description.Length} characters.");
+        }
+        
         _embed.Description = description;
         return this;
     }
@@ -113,8 +131,16 @@ public class DiscordEmbedBuilder
     /// <param name="text">The footer text to display.</param>
     /// <param name="iconUrl">Optional URL for the footer icon.</param>
     /// <returns>The current DiscordEmbedBuilder instance for method chaining.</returns>
+    /// <exception cref="DiscordValidationException">Thrown when footer text exceeds the maximum length of 2048 characters.</exception>
     public DiscordEmbedBuilder WithFooter(string text, string? iconUrl = null)
     {
+        if (!string.IsNullOrEmpty(text) && text.Length > DiscordLimits.MaxFooterTextLength)
+        {
+            throw new DiscordValidationException(
+                $"Footer text exceeds the maximum length of {DiscordLimits.MaxFooterTextLength} characters. " +
+                $"Current length: {text.Length} characters.");
+        }
+        
         _embed.Footer = new DiscordEmbedFooter
         {
             Text = text,
@@ -152,8 +178,16 @@ public class DiscordEmbedBuilder
     /// <param name="url">Optional URL that the author name will link to.</param>
     /// <param name="iconUrl">Optional URL for the author's avatar icon.</param>
     /// <returns>The current DiscordEmbedBuilder instance for method chaining.</returns>
+    /// <exception cref="DiscordValidationException">Thrown when author name exceeds the maximum length of 256 characters.</exception>
     public DiscordEmbedBuilder WithAuthor(string name, string? url = null, string? iconUrl = null)
     {
+        if (!string.IsNullOrEmpty(name) && name.Length > DiscordLimits.MaxAuthorNameLength)
+        {
+            throw new DiscordValidationException(
+                $"Author name exceeds the maximum length of {DiscordLimits.MaxAuthorNameLength} characters. " +
+                $"Current length: {name.Length} characters.");
+        }
+        
         _embed.Author = new DiscordEmbedAuthor
         {
             Name = name,
@@ -170,9 +204,42 @@ public class DiscordEmbedBuilder
     /// <param name="value">The value/content of the field.</param>
     /// <param name="inline">Whether the field should be displayed inline (side by side with other inline fields).</param>
     /// <returns>The current DiscordEmbedBuilder instance for method chaining.</returns>
+    /// <exception cref="DiscordValidationException">Thrown when field name/value exceeds limits or when too many fields are added.</exception>
     public DiscordEmbedBuilder AddField(string name, string value, bool inline = false)
     {
+        if (string.IsNullOrEmpty(name))
+        {
+            throw new DiscordValidationException("Field name cannot be null or empty.");
+        }
+
+        if (string.IsNullOrEmpty(value))
+        {
+            throw new DiscordValidationException("Field value cannot be null or empty.");
+        }
+
+        if (name.Length > DiscordLimits.MaxFieldNameLength)
+        {
+            throw new DiscordValidationException(
+                $"Field name exceeds the maximum length of {DiscordLimits.MaxFieldNameLength} characters. " +
+                $"Current length: {name.Length} characters.");
+        }
+
+        if (value.Length > DiscordLimits.MaxFieldValueLength)
+        {
+            throw new DiscordValidationException(
+                $"Field value exceeds the maximum length of {DiscordLimits.MaxFieldValueLength} characters. " +
+                $"Current length: {value.Length} characters.");
+        }
+
         _embed.Fields ??= new List<DiscordEmbedField>();
+        
+        if (_embed.Fields.Count >= DiscordLimits.MaxFieldsPerEmbed)
+        {
+            throw new DiscordValidationException(
+                $"Cannot add more fields. Maximum allowed: {DiscordLimits.MaxFieldsPerEmbed}. " +
+                $"Current count: {_embed.Fields.Count}.");
+        }
+
         _embed.Fields.Add(new DiscordEmbedField
         {
             Name = name,
@@ -186,8 +253,10 @@ public class DiscordEmbedBuilder
     /// Builds and returns the final DiscordEmbed instance.
     /// </summary>
     /// <returns>A DiscordEmbed instance with all the configured properties.</returns>
+    /// <exception cref="DiscordValidationException">Thrown when the embed exceeds Discord's total content limits.</exception>
     public DiscordEmbed Build()
     {
+        DiscordValidator.ValidateEmbed(_embed);
         return _embed;
     }
 }
