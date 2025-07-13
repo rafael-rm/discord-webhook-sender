@@ -110,16 +110,16 @@ public class DiscordEmbedBuilder
     /// </summary>
     /// <param name="hexColor">The hex color string (e.g., "#FF0000" or "FF0000").</param>
     /// <returns>The current DiscordEmbedBuilder instance for method chaining.</returns>
-    /// <exception cref="ArgumentException">Thrown when hexColor is null, empty, or in invalid format.</exception>
+    /// <exception cref="DiscordValidationException">Thrown when hexColor is null, empty, or in invalid format.</exception>
     public DiscordEmbedBuilder WithColor(string hexColor)
     {
         if (string.IsNullOrWhiteSpace(hexColor))
-            throw new ArgumentException("Hex color cannot be null or empty.", nameof(hexColor));
+            throw new DiscordValidationException("Embed hexColor cannot be null or whitespace.");
 
         var hex = hexColor.TrimStart('#');
 
         if (!int.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out var colorInt))
-            throw new ArgumentException("Invalid hex color format.", nameof(hexColor));
+            throw new DiscordValidationException($"Invalid hex color format: '{hexColor}'. Expected format: '#RRGGBB' or 'RRGGBB'.");
 
         _embed.Color = colorInt;
         return this;

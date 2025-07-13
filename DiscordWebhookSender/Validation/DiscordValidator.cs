@@ -15,7 +15,8 @@ public static class DiscordValidator
     /// <exception cref="DiscordValidationException">Thrown when validation fails.</exception>
     public static void ValidateWebhookMessage(DiscordWebhookMessage message)
     {
-        ArgumentNullException.ThrowIfNull(message);
+        if (message is null)
+            throw new DiscordValidationException("Webhook message cannot be null.");
 
         if (!string.IsNullOrEmpty(message.Content) && message.Content.Length > DiscordLimits.MaxContentLength)
         {
@@ -54,7 +55,8 @@ public static class DiscordValidator
     /// <exception cref="DiscordValidationException">Thrown when validation fails.</exception>
     public static void ValidateEmbed(DiscordEmbed embed)
     {
-        ArgumentNullException.ThrowIfNull(embed);
+        if (embed is null)
+            throw new DiscordValidationException("Embed cannot be null.");
 
         var totalLength = 0;
 
@@ -136,7 +138,8 @@ public static class DiscordValidator
     /// <exception cref="DiscordValidationException">Thrown when validation fails.</exception>
     private static void ValidateField(DiscordEmbedField field, ref int totalLength)
     {
-        ArgumentNullException.ThrowIfNull(field);
+        if (field is null)
+            throw new DiscordValidationException("Embed field cannot be null.");
 
         if (string.IsNullOrEmpty(field.Name))
         {
@@ -163,5 +166,16 @@ public static class DiscordValidator
                 $"Current length: {field.Value.Length} characters.");
         }
         totalLength += field.Value.Length;
+    }
+    
+    /// <summary>
+    /// Validates the webhook URL.
+    /// </summary>
+    /// <param name="webhookUrl">The webhook URL to validate.</param>
+    /// <exception cref="DiscordValidationException">Thrown when the webhook URL is null, empty, or whitespace.</exception>
+    public static void ValidateWebhookUrl(string webhookUrl)
+    {
+        if (string.IsNullOrWhiteSpace(webhookUrl))
+            throw new DiscordValidationException("Webhook URL cannot be null, empty, or whitespace.");
     }
 } 
