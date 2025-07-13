@@ -13,7 +13,7 @@ namespace DiscordWebhookSender;
 public class DiscordWebhookClient : IDiscordWebhookClient
 {
     private static DiscordWebhookClient? _instance;
-    private static readonly object _lock = new object();
+    private static readonly object Lock = new();
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _jsonOptions;
 
@@ -42,7 +42,7 @@ public class DiscordWebhookClient : IDiscordWebhookClient
     {
         if (_instance == null)
         {
-            lock (_lock)
+            lock (Lock)
             {
                 if (_instance == null)
                 {

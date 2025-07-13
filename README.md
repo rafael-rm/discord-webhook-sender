@@ -138,6 +138,7 @@ Predefined colors for easy use:
 - `Default`, `White`, `Red`, `Green`, `Blue`
 - `Yellow`, `Orange`, `Purple`, `Cyan`, `Magenta`
 - `Teal`, `Gold`, `DarkRed`, `DarkGreen`, `DarkBlue`
+- `Navy`, `Olive`, `Pink`, `DarkPink`
 
 ### DiscordWebhookMessage
 

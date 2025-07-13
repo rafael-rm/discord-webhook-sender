@@ -3,7 +3,7 @@ using DiscordWebhookSender.Models;
 
 namespace ConsoleApp;
 
-internal abstract class Program
+internal abstract class DiscordProgram
 {
     static async Task Main()
     {
@@ -20,7 +20,7 @@ internal abstract class Program
             .AddField("Environment", "Production", true)
             .AddField("Duration", "12 minutes", true)
             .AddField("Started by", "Rafael Rodrigues", true)
-            .AddField("Notes", "No errors found during deployment.", false)
+            .AddField("Notes", "No errors found during deployment.")
             .WithFooter("CI Pipeline • 2025 © Hyzen", "https://cdn-icons-png.flaticon.com/512/25/25231.png")
             .Build();
 

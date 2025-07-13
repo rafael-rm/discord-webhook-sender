@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace DiscordWebhookSender.Models;
+﻿namespace DiscordWebhookSender.Models;
 
 /// <summary>
 /// Represents the author information for a Discord embed.

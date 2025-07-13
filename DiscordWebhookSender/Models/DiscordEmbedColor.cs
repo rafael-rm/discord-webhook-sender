@@ -4,7 +4,7 @@
 /// Predefined colors for Discord embeds.
 /// These colors can be used with the DiscordEmbedBuilder.WithColor() method.
 /// </summary>
-public enum DiscordEmbedColor : int
+public enum DiscordEmbedColor
 {
     /// <summary>
     /// Default color (black).
@@ -79,5 +79,25 @@ public enum DiscordEmbedColor : int
     /// <summary>
     /// Dark blue color.
     /// </summary>
-    DarkBlue = 0x00008B
+    DarkBlue = 0x00008B,
+    
+    /// <summary>
+    /// Navy color (dark classic blue).
+    /// </summary>
+    Navy = 0x000080,
+    
+    /// <summary>
+    /// Olive color (mix between green and yellow, good for intermediate statuses).
+    /// </summary>
+    Olive = 0x808000,
+    
+    /// <summary>
+    /// Pink color (light tone).
+    /// </summary>
+    Pink = 0xFFC0CB,
+    
+    /// <summary>
+    /// Dark pink color.
+    /// </summary>
+    DarkPink = 0xFF1493
 }
