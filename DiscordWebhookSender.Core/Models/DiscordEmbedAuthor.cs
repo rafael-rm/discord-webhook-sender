@@ -1,10 +1,19 @@
-﻿namespace DiscordWebhookSender.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace DiscordWebhookSender.Core.Models;
 
 /// <summary>
 /// Represents the author information for a Discord embed.
 /// </summary>
 public class DiscordEmbedAuthor
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DiscordEmbedAuthor"/> class.
+    /// This constructor is internal to ensure that author information is created through the builder or other methods.
+    /// </summary>
+    [JsonConstructor]
+    internal DiscordEmbedAuthor() { }
+    
     /// <summary>
     /// Gets or sets the name of the author.
     /// This is displayed prominently in the embed.

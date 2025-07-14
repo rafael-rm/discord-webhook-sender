@@ -1,4 +1,4 @@
-﻿namespace DiscordWebhookSender.Models;
+﻿namespace DiscordWebhookSender.Core.Models;
 
 /// <summary>
 /// Predefined colors for Discord embeds.

@@ -1,6 +1,8 @@
-﻿using DiscordWebhookSender.Models;
+using DiscordWebhookSender.Core.Exceptions;
+using DiscordWebhookSender.Core.Models;
+using DiscordWebhookSender.Core.Validation;
 
-namespace DiscordWebhookSender;
+namespace DiscordWebhookSender.Core;
 
 /// <summary>
 /// Fluent builder for creating Discord embeds.
@@ -92,17 +94,13 @@ public class DiscordEmbedBuilder
     /// </summary>
     /// <param name="hexColor">The hex color string (e.g., "#FF0000" or "FF0000").</param>
     /// <returns>The current DiscordEmbedBuilder instance for method chaining.</returns>
-    /// <exception cref="ArgumentException">Thrown when hexColor is null, empty, or in invalid format.</exception>
+    /// <exception cref="DiscordValidationException">Thrown when hexColor is null, empty, or in invalid format.</exception>
     public DiscordEmbedBuilder WithColor(string hexColor)
     {
-        if (string.IsNullOrWhiteSpace(hexColor))
-            throw new ArgumentException("Hex color cannot be null or empty.", nameof(hexColor));
-
+        DiscordValidator.ValidateHexColor(hexColor);
+        
         var hex = hexColor.TrimStart('#');
-
-        if (!int.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out var colorInt))
-            throw new ArgumentException("Invalid hex color format.", nameof(hexColor));
-
+        var colorInt = int.Parse(hex, System.Globalization.NumberStyles.HexNumber);
         _embed.Color = colorInt;
         return this;
     }
@@ -173,6 +171,7 @@ public class DiscordEmbedBuilder
     public DiscordEmbedBuilder AddField(string name, string value, bool inline = false)
     {
         _embed.Fields ??= new List<DiscordEmbedField>();
+        
         _embed.Fields.Add(new DiscordEmbedField
         {
             Name = name,
@@ -186,8 +185,10 @@ public class DiscordEmbedBuilder
     /// Builds and returns the final DiscordEmbed instance.
     /// </summary>
     /// <returns>A DiscordEmbed instance with all the configured properties.</returns>
+    /// <exception cref="DiscordValidationException">Thrown when the embed exceeds Discord's total content limits.</exception>
     public DiscordEmbed Build()
     {
+        DiscordValidator.ValidateEmbed(_embed);
         return _embed;
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace DiscordWebhookSender.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace DiscordWebhookSender.Core.Models;
 
 /// <summary>
 /// Represents a field within a Discord embed.
@@ -6,6 +8,13 @@
 /// </summary>
 public class DiscordEmbedField
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DiscordEmbedField"/> class.
+    /// This constructor is internal to ensure that fields are created through the builder or other methods.
+    /// </summary>
+    [JsonConstructor]
+    internal DiscordEmbedField() { }
+    
     /// <summary>
     /// Gets or sets the name/title of the field.
     /// This is displayed as the field's header.
