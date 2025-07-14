@@ -95,7 +95,6 @@ var client = DiscordWebhookClient.Get();
 ```
 
 #### Methods
-
 ```csharp
 // Send a complete DiscordWebhookMessage
 await client.SendAsync(webhookUrl, message, cancellationToken);
@@ -111,29 +110,19 @@ await client.SendAsync(webhookUrl, embed, cancellationToken);
 
 Fluent API for building Discord embeds with automatic validation of Discord API limits.
 
-#### Basic Methods
+#### Methods
 - `WithTitle(string title)` - Set the embed title (max 256 characters)
 - `WithDescription(string description)` - Set the embed description (max 4096 characters)
 - `WithUrl(string url)` - Set the embed URL
-
-#### Timestamp Methods
 - `WithTimestamp(DateTimeOffset timestamp)` - Set the embed timestamp using DateTimeOffset
 - `WithTimestamp(DateTime dateTime)` - Set the embed timestamp using DateTime (converted to DateTimeOffset)
-
-#### Color Methods
 - `WithColor(int color)` - Set color using integer value
 - `WithColor(DiscordEmbedColor color)` - Set color using predefined enum
 - `WithColor(string hexColor)` - Set color using hex string (e.g., "#FF0000")
-
-#### Media Methods
 - `WithImage(string url)` - Add an image to the embed
 - `WithThumbnail(string url)` - Add a thumbnail to the embed
-
-#### Author & Footer
 - `WithAuthor(string name, string? url, string? iconUrl)` - Set embed author (name max 256 characters)
 - `WithFooter(string text, string? iconUrl)` - Set embed footer (text max 2048 characters)
-
-#### Fields
 - `AddField(string name, string value, bool inline)` - Add a field to the embed (name max 256, value max 1024, max 25 fields)
 
 ### DiscordEmbedColor Enum
@@ -148,44 +137,15 @@ Predefined colors for easy use:
 
 Fluent API for building Discord webhook messages with automatic validation of Discord API limits.
 
-#### Basic Methods
+#### Methods
 - `WithContent(string content)` - Set the message content (max 2000 characters)
 - `WithUsername(string username)` - Set the custom username (max 80 characters)
 - `WithTts(bool tts)` - Enable or disable text-to-speech
 - `WithAvatarUrl(string avatarUrl)` - Set the custom avatar URL
-
-#### Embed Methods
 - `AddEmbed(DiscordEmbed embed)` - Add a single embed to the message
 - `AddEmbed(IEnumerable<DiscordEmbed> embeds)` - Add multiple embeds from a collection
 - `AddEmbed(params DiscordEmbed[] embeds)` - Add multiple embeds using params
 - `ClearEmbeds()` - Remove all embeds from the message
-
-#### Usage Example
-```csharp
-var message = new DiscordWebhookMessageBuilder()
-    .WithContent("Hello, Discord!")
-    .WithUsername("My Bot")
-    .WithAvatarUrl("https://example.com/avatar.png")
-    .WithTts(false)
-    .AddEmbed(embed1)
-    .AddEmbed(embed2, embed3)
-    .Build();
-```
-
-### DiscordWebhookMessage
-
-The message model for Discord webhooks with automatic validation.
-
-```csharp
-var message = new DiscordWebhookMessage
-{
-    Content = "Message content", // max 2000 characters
-    Username = "Custom Username", // max 80 characters
-    AvatarUrl = "https://example.com/avatar.png",
-    Tts = false,
-    Embeds = [embed1, embed2] // max 10 embeds
-};
-```
 
 ## Validation and Error Handling
 
@@ -221,25 +181,7 @@ catch (DiscordValidationException ex)
 }
 ```
 
-## Examples
-
-### Simple Text Message
-```csharp
-var client = DiscordWebhookClient.Get();
-await client.SendAsync(webhookUrl, "Hello, Discord!");
-```
-
-### Simple Embed
-```csharp
-var embed = new DiscordEmbedBuilder()
-    .WithTitle("Alert")
-    .WithDescription("This is an important notification")
-    .WithColor("#FF0000") // Red color
-    .Build();
-
-var client = DiscordWebhookClient.Get();
-await client.SendAsync(webhookUrl, embed);
-```
+## Additional Examples
 
 ### Complete Message with Multiple Embeds
 ```csharp
@@ -265,7 +207,7 @@ var client = DiscordWebhookClient.Get();
 await client.SendAsync(webhookUrl, message);
 ```
 
-### Multiple Fields
+### Multiple Fields and Timestamps
 ```csharp
 var embed = new DiscordEmbedBuilder()
     .WithTitle("System Status")
@@ -273,21 +215,7 @@ var embed = new DiscordEmbedBuilder()
     .AddField("Memory Usage", "67%", true)
     .AddField("Disk Space", "23%", true)
     .AddField("Notes", "All systems operational", false)
-    .Build();
-```
-
-### Timestamp Examples
-```csharp
-// Using DateTimeOffset (recommended for UTC timestamps)
-var embed1 = new DiscordEmbedBuilder()
-    .WithTitle("Event Log")
     .WithTimestamp(DateTimeOffset.UtcNow)
-    .Build();
-
-// Using DateTime (automatically converted to DateTimeOffset)
-var embed2 = new DiscordEmbedBuilder()
-    .WithTitle("Local Event")
-    .WithTimestamp(DateTime.Now)
     .Build();
 ```
 
