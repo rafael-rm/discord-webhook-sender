@@ -10,16 +10,11 @@ namespace DiscordWebhookSender.Tests;
 
 public class DiscordWebhookClientIntegrationTests
 {
-    private readonly JsonSerializerOptions _jsonOptions;
-
-    public DiscordWebhookClientIntegrationTests()
+    private readonly JsonSerializerOptions _jsonOptions = new()
     {
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        };
-    }
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
 
     private DiscordWebhookClient CreateClient(Mock<HttpMessageHandler> mockHandler)
     {

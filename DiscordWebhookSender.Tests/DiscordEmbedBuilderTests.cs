@@ -12,25 +12,25 @@ public class DiscordEmbedBuilderTests
     {
         // Arrange
         var timestamp = DateTimeOffset.UtcNow;
-        var authorName = "Test Author";
-        var authorUrl = "https://example.com/author";
-        var authorIconUrl = "https://example.com/author-icon.png";
-        var footerText = "Test Footer";
-        var footerIconUrl = "https://example.com/footer-icon.png";
-        var imageUrl = "https://example.com/image.png";
-        var thumbnailUrl = "https://example.com/thumbnail.png";
-        var title = "Test Embed Title";
-        var description = "This is a test embed description with all fields filled to demonstrate the complete functionality of the DiscordEmbedBuilder.";
-        var url = "https://example.com/embed-url";
-        var hexColor = "#FF6B6B";
-        var field1Name = "Field 1";
-        var field1Value = "This is the first field value";
-        var field2Name = "Field 2";
-        var field2Value = "This is the second field value";
-        var field3Name = "Inline Field 1";
-        var field3Value = "This is an inline field";
-        var field4Name = "Inline Field 2";
-        var field4Value = "This is another inline field";
+        const string  authorName = "Test Author";
+        const string  authorUrl = "https://example.com/author";
+        const string  authorIconUrl = "https://example.com/author-icon.png";
+        const string  footerText = "Test Footer";
+        const string  footerIconUrl = "https://example.com/footer-icon.png";
+        const string  imageUrl = "https://example.com/image.png";
+        const string  thumbnailUrl = "https://example.com/thumbnail.png";
+        const string  title = "Test Embed Title";
+        const string  description = "This is a test embed description with all fields filled to demonstrate the complete functionality of the DiscordEmbedBuilder.";
+        const string  url = "https://example.com/embed-url";
+        const string  hexColor = "#FF6B6B";
+        const string field1Name = "Field 1";
+        const string field1Value = "This is the first field value";
+        const string  field2Name = "Field 2";
+        const string  field2Value = "This is the second field value";
+        const string  field3Name = "Inline Field 1";
+        const string  field3Value = "This is an inline field";
+        const string  field4Name = "Inline Field 2";
+        const string  field4Value = "This is another inline field";
 
         // Act
         var embed = new DiscordEmbedBuilder()
