@@ -9,7 +9,7 @@ public class DiscordWebhookMessage
     /// Initializes a new instance of the <see cref="DiscordWebhookMessage"/> class.
     /// This constructor is internal to ensure that messages are created through the builder or other methods.
     /// /// </summary>
-    internal DiscordWebhookMessage() { }
+    public DiscordWebhookMessage() { }
 
     /// <summary>
     /// Gets or sets the content of the message.

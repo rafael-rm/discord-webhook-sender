@@ -215,7 +215,7 @@ try
 catch (DiscordValidationException ex)
 {
     Console.WriteLine($"Validation failed: {ex.Message}");
-    // Output: Validation failed: Embed title exceeds the maximum length of 256 characters. Current length: 280 characters.
+    // Output: Validation failed: Embed title exceeds the maximum length of 256 characters. Current length: 502 characters.
 }
 ```
 

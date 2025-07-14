@@ -42,12 +42,26 @@ public class DiscordWebhookClient : IDiscordWebhookClient
     /// <returns>The singleton instance of DiscordWebhookClient.</returns>
     public static DiscordWebhookClient Get(HttpClient? httpClient = null)
     {
-        if (_instance != null) return _instance;
-        
         lock (Lock)
-            _instance ??= new DiscordWebhookClient(httpClient);
-        
-        return _instance;
+        {
+            if (_instance != null) return _instance;
+            
+            _instance = new DiscordWebhookClient(httpClient);
+            
+            return _instance;
+        }
+    }
+
+    /// <summary>
+    /// Resets the singleton instance. This method is primarily for testing purposes.
+    /// </summary>
+    public static void Reset()
+    {
+        lock (Lock)
+        {
+            _instance?._httpClient.Dispose();
+            _instance = null;
+        }
     }
 
     /// <summary>
