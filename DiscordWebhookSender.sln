@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordWebhookSender.Consol
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordWebhookSender.Core", "DiscordWebhookSender.Core\DiscordWebhookSender.Core.csproj", "{5C990C77-92CC-4F9A-AE07-089011FEBAB2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordWebhookSender.Tests", "DiscordWebhookSender.Tests\DiscordWebhookSender.Tests.csproj", "{280F68BC-5A5B-44E1-8AAC-864F69A1206E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{5C990C77-92CC-4F9A-AE07-089011FEBAB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C990C77-92CC-4F9A-AE07-089011FEBAB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C990C77-92CC-4F9A-AE07-089011FEBAB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{280F68BC-5A5B-44E1-8AAC-864F69A1206E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{280F68BC-5A5B-44E1-8AAC-864F69A1206E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{280F68BC-5A5B-44E1-8AAC-864F69A1206E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{280F68BC-5A5B-44E1-8AAC-864F69A1206E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

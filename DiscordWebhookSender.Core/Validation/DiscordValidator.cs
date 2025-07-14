@@ -16,18 +16,18 @@ public static class DiscordValidator
     public static void ValidateWebhookMessage(DiscordWebhookMessage message)
     {
         if (message is null)
-            throw new DiscordValidationException("Webhook message cannot be null.");
+            throw new DiscordValidationException(DiscordValidationError.NullOrEmptyWebhookMessage, "Webhook message cannot be null.");
 
         if (!string.IsNullOrEmpty(message.Content) && message.Content.Length > DiscordLimits.MaxContentLength)
         {
-            throw new DiscordValidationException(
+            throw new DiscordValidationException(DiscordValidationError.ContentTooLong,
                 $"Message content exceeds the maximum length of {DiscordLimits.MaxContentLength} characters. " +
                 $"Current length: {message.Content.Length} characters.");
         }
 
         if (!string.IsNullOrEmpty(message.Username) && message.Username.Length > DiscordLimits.MaxUsernameLength)
         {
-            throw new DiscordValidationException(
+            throw new DiscordValidationException(DiscordValidationError.UsernameTooLong,
                 $"Username exceeds the maximum length of {DiscordLimits.MaxUsernameLength} characters. " +
                 $"Current length: {message.Username.Length} characters.");
         }
@@ -36,7 +36,7 @@ public static class DiscordValidator
         {
             if (message.Embeds.Count > DiscordLimits.MaxEmbedsPerMessage)
             {
-                throw new DiscordValidationException(
+                throw new DiscordValidationException(DiscordValidationError.TooManyEmbeds,
                     $"Message contains too many embeds. Maximum allowed: {DiscordLimits.MaxEmbedsPerMessage}. " +
                     $"Current count: {message.Embeds.Count}.");
             }
@@ -56,7 +56,7 @@ public static class DiscordValidator
     public static void ValidateEmbed(DiscordEmbed embed)
     {
         if (embed is null)
-            throw new DiscordValidationException("Embed cannot be null.");
+            throw new DiscordValidationException(DiscordValidationError.NullEmbed, "Embed cannot be null.");
 
         var totalLength = 0;
 
@@ -64,7 +64,7 @@ public static class DiscordValidator
         {
             if (embed.Title.Length > DiscordLimits.MaxTitleLength)
             {
-                throw new DiscordValidationException(
+                throw new DiscordValidationException(DiscordValidationError.TitleTooLong,
                     $"Embed title exceeds the maximum length of {DiscordLimits.MaxTitleLength} characters. " +
                     $"Current length: {embed.Title.Length} characters.");
             }
@@ -75,7 +75,7 @@ public static class DiscordValidator
         {
             if (embed.Description.Length > DiscordLimits.MaxDescriptionLength)
             {
-                throw new DiscordValidationException(
+                throw new DiscordValidationException(DiscordValidationError.DescriptionTooLong,
                     $"Embed description exceeds the maximum length of {DiscordLimits.MaxDescriptionLength} characters. " +
                     $"Current length: {embed.Description.Length} characters.");
             }
@@ -93,7 +93,7 @@ public static class DiscordValidator
             {
                 if (embed.Author.Name.Length > DiscordLimits.MaxAuthorNameLength)
                 {
-                    throw new DiscordValidationException(
+                    throw new DiscordValidationException(DiscordValidationError.AuthorNameTooLong,
                         $"Author name exceeds the maximum length of {DiscordLimits.MaxAuthorNameLength} characters. " +
                         $"Current length: {embed.Author.Name.Length} characters.");
                 }
@@ -115,7 +115,7 @@ public static class DiscordValidator
         {
             if (embed.Footer.Text.Length > DiscordLimits.MaxFooterTextLength)
             {
-                throw new DiscordValidationException(
+                throw new DiscordValidationException(DiscordValidationError.FooterTextTooLong,
                     $"Footer text exceeds the maximum length of {DiscordLimits.MaxFooterTextLength} characters. " +
                     $"Current length: {embed.Footer.Text.Length} characters.");
             }
@@ -141,7 +141,7 @@ public static class DiscordValidator
         {
             if (embed.Fields.Count > DiscordLimits.MaxFieldsPerEmbed)
             {
-                throw new DiscordValidationException(
+                throw new DiscordValidationException(DiscordValidationError.TooManyFields,
                     $"Embed contains too many fields. Maximum allowed: {DiscordLimits.MaxFieldsPerEmbed}. " +
                     $"Current count: {embed.Fields.Count}.");
             }
@@ -154,7 +154,7 @@ public static class DiscordValidator
 
         if (totalLength > DiscordLimits.MaxTotalEmbedLength)
         {
-            throw new DiscordValidationException(
+            throw new DiscordValidationException(DiscordValidationError.TotalContentTooLong,
                 $"Total embed content length exceeds the maximum of {DiscordLimits.MaxTotalEmbedLength} characters. " +
                 $"Current total length: {totalLength} characters.");
         }
@@ -169,16 +169,16 @@ public static class DiscordValidator
     private static void ValidateField(DiscordEmbedField field, ref int totalLength)
     {
         if (field is null)
-            throw new DiscordValidationException("Embed field cannot be null.");
+            throw new DiscordValidationException(DiscordValidationError.NullField, "Embed field cannot be null.");
 
         if (string.IsNullOrEmpty(field.Name))
         {
-            throw new DiscordValidationException("Field name cannot be null or empty.");
+            throw new DiscordValidationException(DiscordValidationError.EmptyFieldName, "Field name cannot be null or empty.");
         }
 
         if (field.Name.Length > DiscordLimits.MaxFieldNameLength)
         {
-            throw new DiscordValidationException(
+            throw new DiscordValidationException(DiscordValidationError.FieldNameTooLong,
                 $"Field name exceeds the maximum length of {DiscordLimits.MaxFieldNameLength} characters. " +
                 $"Current length: {field.Name.Length} characters.");
         }
@@ -186,12 +186,12 @@ public static class DiscordValidator
 
         if (string.IsNullOrEmpty(field.Value))
         {
-            throw new DiscordValidationException("Field value cannot be null or empty.");
+            throw new DiscordValidationException(DiscordValidationError.EmptyFieldValue, "Field value cannot be null or empty.");
         }
 
         if (field.Value.Length > DiscordLimits.MaxFieldValueLength)
         {
-            throw new DiscordValidationException(
+            throw new DiscordValidationException(DiscordValidationError.FieldValueTooLong,
                 $"Field value exceeds the maximum length of {DiscordLimits.MaxFieldValueLength} characters. " +
                 $"Current length: {field.Value.Length} characters.");
         }
@@ -207,12 +207,12 @@ public static class DiscordValidator
     private static void ValidateUrl(string url, string urlName)
     {
         if (string.IsNullOrWhiteSpace(url))
-            throw new DiscordValidationException($"{urlName} cannot be null, empty, or whitespace.");
+            throw new DiscordValidationException(DiscordValidationError.InvalidUrl, $"{urlName} cannot be null, empty, or whitespace.");
 
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || 
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
-            throw new DiscordValidationException($"{urlName} must be a valid HTTP or HTTPS URL: '{url}'");
+            throw new DiscordValidationException(DiscordValidationError.InvalidUrl, $"{urlName} must be a valid HTTP or HTTPS URL: '{url}'");
         }
     }
     
@@ -224,7 +224,7 @@ public static class DiscordValidator
     public static void ValidateWebhookUrl(string webhookUrl)
     {
         if (string.IsNullOrWhiteSpace(webhookUrl))
-            throw new DiscordValidationException("Webhook URL cannot be null, empty, or whitespace.");
+            throw new DiscordValidationException(DiscordValidationError.InvalidUrl, "Webhook URL cannot be null, empty, or whitespace.");
     }
 
     /// <summary>
@@ -235,11 +235,11 @@ public static class DiscordValidator
     public static void ValidateHexColor(string hexColor)
     {
         if (string.IsNullOrWhiteSpace(hexColor))
-            throw new DiscordValidationException("Hex color cannot be null or whitespace.");
+            throw new DiscordValidationException(DiscordValidationError.InvalidHexColor, "Hex color cannot be null or whitespace.");
 
         var hex = hexColor.TrimStart('#');
 
         if (!int.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out _))
-            throw new DiscordValidationException($"Invalid hex color format: '{hexColor}'. Expected format: '#RRGGBB' or 'RRGGBB'.");
+            throw new DiscordValidationException(DiscordValidationError.InvalidHexColor, $"Invalid hex color format: '{hexColor}'. Expected format: '#RRGGBB' or 'RRGGBB'.");
     }
 } 

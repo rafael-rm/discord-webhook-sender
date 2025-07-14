@@ -6,20 +6,37 @@ namespace DiscordWebhookSender.Core.Exceptions;
 /// </summary>
 public class DiscordValidationException : Exception
 {
-    /// <summary>
-    /// Initializes a new instance of the DiscordValidationException class with a specified error message.
-    /// </summary>
-    /// <param name="message">The error message that explains the reason for the exception.</param>
-    public DiscordValidationException(string message) : base(message)
+    public DiscordValidationError ErrorCode { get; }
+
+    public DiscordValidationException(DiscordValidationError errorCode, string message) : base(message)
     {
+        ErrorCode = errorCode;
     }
 
-    /// <summary>
-    /// Initializes a new instance of the DiscordValidationException class with a specified error message and a reference to the inner exception that is the cause of this exception.
-    /// </summary>
-    /// <param name="message">The error message that explains the reason for the exception.</param>
-    /// <param name="innerException">The exception that is the cause of the current exception.</param>
-    public DiscordValidationException(string message, Exception innerException) : base(message, innerException)
+    public DiscordValidationException(DiscordValidationError errorCode, string message, Exception innerException) : base(message, innerException)
     {
+        ErrorCode = errorCode;
     }
 } 
+
+public enum DiscordValidationError
+{
+    TitleTooLong,
+    DescriptionTooLong,
+    AuthorNameTooLong,
+    FooterTextTooLong,
+    FieldNameTooLong,
+    FieldValueTooLong,
+    TooManyFields,
+    TotalContentTooLong,
+    InvalidHexColor,
+    InvalidUrl,
+    EmptyFieldName,
+    EmptyFieldValue,
+    NullEmbed,
+    NullField,
+    NullOrEmptyWebhookMessage,
+    ContentTooLong,
+    UsernameTooLong,
+    TooManyEmbeds,
+}
