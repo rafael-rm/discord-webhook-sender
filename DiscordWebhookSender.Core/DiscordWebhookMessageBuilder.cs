@@ -63,7 +63,7 @@ public class DiscordWebhookMessageBuilder
     /// <returns>The current DiscordWebhookMessageBuilder instance for method chaining.</returns>
     public DiscordWebhookMessageBuilder AddEmbed(DiscordEmbed embed)
     {
-        _message.Embeds ??= new List<DiscordEmbed>();
+        _message.Embeds ??= [];
         _message.Embeds.Add(embed);
         return this;
     }
@@ -75,7 +75,7 @@ public class DiscordWebhookMessageBuilder
     /// <returns>The current DiscordWebhookMessageBuilder instance for method chaining.</returns>
     public DiscordWebhookMessageBuilder AddEmbed(IEnumerable<DiscordEmbed> embeds)
     {
-        _message.Embeds ??= new List<DiscordEmbed>();
+        _message.Embeds ??= [];
         _message.Embeds.AddRange(embeds);
         return this;
     }

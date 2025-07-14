@@ -170,7 +170,7 @@ public class DiscordEmbedBuilder
     /// <returns>The current DiscordEmbedBuilder instance for method chaining.</returns>
     public DiscordEmbedBuilder AddField(string name, string value, bool inline = false)
     {
-        _embed.Fields ??= new List<DiscordEmbedField>();
+        _embed.Fields ??= [];
         
         _embed.Fields.Add(new DiscordEmbedField
         {
