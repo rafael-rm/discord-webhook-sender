@@ -1,4 +1,6 @@
 # Discord Webhook Sender
+[![NuGet Version](https://img.shields.io/nuget/v/DiscordWebhookSender.svg?style=flate&logo=nuget)](https://www.nuget.org/packages/DiscordWebhookSender)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/DiscordWebhookSender.svg?style=)](https://www.nuget.org/packages/DiscordWebhookSender)
 
 A .NET library for sending Discord webhooks with rich embeds and message formatting. This library provides a simple and intuitive API for creating and sending Discord webhook messages with support for embeds, colors, fields, and more.
 
