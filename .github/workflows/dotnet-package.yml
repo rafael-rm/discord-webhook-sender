@@ -25,7 +25,7 @@ jobs:
         dotnet restore
       
     - name: Run tests
-      run: dotnet test --no-build --verbosity normal --configuration Release
+      run: dotnet test --verbosity normal --configuration Release
       
     - name: Package generation
       run: dotnet build -c Release
