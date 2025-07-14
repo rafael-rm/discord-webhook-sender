@@ -6,6 +6,7 @@ A .NET library for sending Discord webhooks with rich embeds and message formatt
 
 - **Simple Webhook Client**: Easy-to-use HTTP client for sending Discord webhooks
 - **Rich Embed Builder**: Fluent API for creating beautiful Discord embeds
+- **Message Builder**: Fluent API for creating Discord webhook messages with content, embeds, and customization
 - **Color Support**: Built-in color constants and hex color support
 - **Message Customization**: Support for username, avatar, content, and TTS
 - **Field Management**: Add inline and block fields to embeds
@@ -67,14 +68,13 @@ var embed = new DiscordEmbedBuilder()
     .WithFooter("CI Pipeline • 2025", "https://example.com/footer.png")
     .Build();
 
-// Create the webhook message
-var message = new DiscordWebhookMessage
-{
-    Username = "CI/CD Bot",
-    AvatarUrl = "https://example.com/avatar.png",
-    Content = "✅ Automatic update completed",
-    Embeds = [embed]
-};
+// Create the webhook message using the builder
+var message = new DiscordWebhookMessageBuilder()
+    .WithContent("✅ Automatic update completed")
+    .WithUsername("CI/CD Bot")
+    .WithAvatarUrl("https://example.com/avatar.png")
+    .AddEmbed(embed)
+    .Build();
 
 // Send the webhook
 var client = DiscordWebhookClient.Get();
@@ -141,6 +141,34 @@ Predefined colors for easy use:
 - `Yellow`, `Orange`, `Purple`, `Cyan`, `Magenta`
 - `Teal`, `Gold`, `DarkRed`, `DarkGreen`, `DarkBlue`
 - `Navy`, `Olive`, `Pink`, `DarkPink`
+
+### DiscordWebhookMessageBuilder
+
+Fluent API for building Discord webhook messages with automatic validation of Discord API limits.
+
+#### Basic Methods
+- `WithContent(string content)` - Set the message content (max 2000 characters)
+- `WithUsername(string username)` - Set the custom username (max 80 characters)
+- `WithTts(bool tts)` - Enable or disable text-to-speech
+- `WithAvatarUrl(string avatarUrl)` - Set the custom avatar URL
+
+#### Embed Methods
+- `AddEmbed(DiscordEmbed embed)` - Add a single embed to the message
+- `AddEmbed(IEnumerable<DiscordEmbed> embeds)` - Add multiple embeds from a collection
+- `AddEmbed(params DiscordEmbed[] embeds)` - Add multiple embeds using params
+- `ClearEmbeds()` - Remove all embeds from the message
+
+#### Usage Example
+```csharp
+var message = new DiscordWebhookMessageBuilder()
+    .WithContent("Hello, Discord!")
+    .WithUsername("My Bot")
+    .WithAvatarUrl("https://example.com/avatar.png")
+    .WithTts(false)
+    .AddEmbed(embed1)
+    .AddEmbed(embed2, embed3)
+    .Build();
+```
 
 ### DiscordWebhookMessage
 
@@ -225,12 +253,11 @@ var embed2 = new DiscordEmbedBuilder()
     .WithColor(DiscordEmbedColor.Blue)
     .Build();
 
-var message = new DiscordWebhookMessage
-{
-    Content = "📊 System Report",
-    Username = "System Monitor",
-    Embeds = [embed1, embed2]
-};
+var message = new DiscordWebhookMessageBuilder()
+    .WithContent("📊 System Report")
+    .WithUsername("System Monitor")
+    .AddEmbed(embed1, embed2)
+    .Build();
 
 var client = DiscordWebhookClient.Get();
 await client.SendAsync(webhookUrl, message);

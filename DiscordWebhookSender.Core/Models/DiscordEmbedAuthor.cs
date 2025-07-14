@@ -6,6 +6,12 @@
 public class DiscordEmbedAuthor
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="DiscordEmbedAuthor"/> class.
+    /// This constructor is internal to ensure that author information is created through the builder or other methods.
+    /// </summary>
+    internal DiscordEmbedAuthor() { }
+    
+    /// <summary>
     /// Gets or sets the name of the author.
     /// This is displayed prominently in the embed.
     /// </summary>

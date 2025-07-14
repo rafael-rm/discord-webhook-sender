@@ -6,6 +6,12 @@
 public class DiscordEmbedFooter
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="DiscordEmbedFooter"/> class.
+    /// This constructor is internal to ensure that footer information is created through the builder or other methods.
+    /// </summary>
+    internal DiscordEmbedFooter() { }
+    
+    /// <summary>
     /// Gets or sets the footer text.
     /// This is displayed at the bottom of the embed.
     /// </summary>

@@ -7,6 +7,12 @@
 public class DiscordEmbed
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="DiscordEmbed"/> class.
+    /// This constructor is internal to ensure that embeds are created through the builder or other methods.
+    /// /// </summary>
+    internal DiscordEmbed() { }
+    
+    /// <summary>
     /// Gets or sets the title of the embed.
     /// This is displayed prominently at the top of the embed.
     /// </summary>

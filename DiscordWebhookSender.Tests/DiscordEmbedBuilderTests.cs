@@ -1,6 +1,7 @@
 ﻿using DiscordWebhookSender.Core;
 using DiscordWebhookSender.Core.Models;
 using DiscordWebhookSender.Core.Exceptions;
+using DiscordWebhookSender.Core.Validation;
 
 namespace DiscordWebhookSender.Tests;
 

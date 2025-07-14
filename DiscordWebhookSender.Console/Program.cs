@@ -1,5 +1,4 @@
 ﻿using DiscordWebhookSender.Core;
-using DiscordWebhookSender.Core.Models;
 
 namespace DiscordWebhookSender.Console;
 
@@ -23,14 +22,13 @@ internal abstract class DiscordProgram
             .AddField("Notes", "No errors found during deployment.")
             .WithFooter("CI Pipeline • 2025 © Hyzen", "https://cdn-icons-png.flaticon.com/512/25/25231.png")
             .Build();
-
-        var message = new DiscordWebhookMessage
-        {
-            AvatarUrl = "https://cdn-icons-png.flaticon.com/512/5968/5968756.png",
-            Username = "Hyzen CI/CD Bot",
-            Content = "✅ Automatic update completed",
-            Embeds = [embed]
-        };
+        
+        var message = new DiscordWebhookMessageBuilder()
+            .WithAvatarUrl("https://cdn-icons-png.flaticon.com/512/5968/5968756.png")
+            .WithUsername("Hyzen CI/CD Bot")
+            .WithContent("✅ Automatic update completed")
+            .AddEmbed(embed)
+            .Build();
 
         var client = DiscordWebhookClient.Get();
         await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", message);
