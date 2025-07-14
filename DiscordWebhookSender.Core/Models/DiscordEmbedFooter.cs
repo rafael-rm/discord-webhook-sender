@@ -1,4 +1,6 @@
-﻿namespace DiscordWebhookSender.Core.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace DiscordWebhookSender.Core.Models;
 
 /// <summary>
 /// Represents the footer information for a Discord embed.
@@ -9,6 +11,7 @@ public class DiscordEmbedFooter
     /// Initializes a new instance of the <see cref="DiscordEmbedFooter"/> class.
     /// This constructor is internal to ensure that footer information is created through the builder or other methods.
     /// </summary>
+    [JsonConstructor]
     internal DiscordEmbedFooter() { }
     
     /// <summary>

@@ -1,5 +1,4 @@
 ﻿using DiscordWebhookSender.Core;
-using DiscordWebhookSender.Core.Models;
 
 namespace DiscordWebhookSender.Console;
 

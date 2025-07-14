@@ -1,4 +1,6 @@
-﻿namespace DiscordWebhookSender.Core.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace DiscordWebhookSender.Core.Models;
 
 /// <summary>
 /// Represents a Discord embed that can be included in a webhook message.
@@ -10,6 +12,7 @@ public class DiscordEmbed
     /// Initializes a new instance of the <see cref="DiscordEmbed"/> class.
     /// This constructor is internal to ensure that embeds are created through the <see cref="DiscordEmbedBuilder"/> or other methods.
     /// </summary>
+    [JsonConstructor]
     internal DiscordEmbed() { }
     
     /// <summary>

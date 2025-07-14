@@ -1,4 +1,6 @@
-﻿namespace DiscordWebhookSender.Core.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace DiscordWebhookSender.Core.Models;
 
 /// <summary>
 /// Represents a Discord webhook message that can be sent to a Discord channel.
@@ -9,6 +11,7 @@ public class DiscordWebhookMessage
     /// Initializes a new instance of the <see cref="DiscordWebhookMessage"/> class.
     /// This constructor is internal to ensure that messages are created through the <see cref="DiscordWebhookMessageBuilder"/> or other methods.
     /// </summary>
+    [JsonConstructor]
     internal DiscordWebhookMessage() { }
 
     /// <summary>

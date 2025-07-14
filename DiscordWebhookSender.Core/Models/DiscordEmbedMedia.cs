@@ -1,4 +1,6 @@
-﻿namespace DiscordWebhookSender.Core.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace DiscordWebhookSender.Core.Models;
 
 /// <summary>
 /// Represents media content (images) for Discord embeds.
@@ -10,6 +12,7 @@ public class DiscordEmbedMedia
     /// Initializes a new instance of the <see cref="DiscordEmbedMedia"/> class.
     /// This constructor is internal to ensure that media content is created through the builder or other methods.
     /// </summary>
+    [JsonConstructor]
     internal DiscordEmbedMedia() { }
     
     /// <summary>

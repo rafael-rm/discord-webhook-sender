@@ -43,8 +43,8 @@ public class DiscordEmbedBuilderTests
             .WithFooter(footerText, footerIconUrl)
             .WithImage(imageUrl)
             .WithThumbnail(thumbnailUrl)
-            .AddField(field1Name, field1Value, false)
-            .AddField(field2Name, field2Value, false)
+            .AddField(field1Name, field1Value)
+            .AddField(field2Name, field2Value)
             .AddField(field3Name, field3Value, true)
             .AddField(field4Name, field4Value, true)
             .Build();
