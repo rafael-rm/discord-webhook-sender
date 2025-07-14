@@ -318,7 +318,7 @@ public class DiscordEmbedBuilderTests
         var exception = Assert.Throws<DiscordValidationException>(() =>
             new DiscordEmbedBuilder()
                 .WithTitle("Test")
-                .WithColor((string)null!)
+                .WithColor(null!)
                 .Build());
         Assert.Equal(DiscordValidationError.InvalidHexColor, exception.ErrorCode);
     }
