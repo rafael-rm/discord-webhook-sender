@@ -267,8 +267,8 @@ public class DiscordWebhookClientIntegrationTests
         var endTime = DateTime.UtcNow;
 
         // Assert
-        Assert.Equal(2, callCount); // Primeira chamada retorna 429, segunda retorna sucesso
-        Assert.True(endTime - startTime >= TimeSpan.FromMilliseconds(100)); // Deve ter esperado pelo menos 100ms
+        Assert.Equal(2, callCount); // First call returns 429, second returns success
+        Assert.True(endTime - startTime >= TimeSpan.FromMilliseconds(100)); // Should have waited at least 100ms
     }
 
     [Fact]
