@@ -19,11 +19,8 @@ public class DiscordWebhookClientIntegrationTests
 
     private DiscordWebhookClient CreateClient(Mock<HttpMessageHandler> mockHandler)
     {
-        // Reset the singleton instance before creating a new one
-        DiscordWebhookClient.Reset();
-        
         var httpClient = new HttpClient(mockHandler.Object);
-        return DiscordWebhookClient.Get(httpClient);
+        return DiscordWebhookClient.Create(httpClient: httpClient);
     }
 
     [Fact]
@@ -279,10 +276,9 @@ public class DiscordWebhookClientIntegrationTests
     {
         // Arrange
         var mockHandler = new Mock<HttpMessageHandler>();
-        DiscordWebhookClient.Reset();
         
         var httpClient = new HttpClient(mockHandler.Object);
-        var client = DiscordWebhookClient.Get(httpClient, enableRateLimitHandling: false);
+        var client = DiscordWebhookClient.Create(enableRateLimitHandling: false, httpClient: httpClient);
         
         var webhookUrl = "https://discord.com/api/webhooks/123456789/abcdef";
         var message = new DiscordWebhookMessageBuilder()
@@ -369,10 +365,9 @@ public class DiscordWebhookClientIntegrationTests
     {
         // Arrange
         var mockHandler = new Mock<HttpMessageHandler>();
-        DiscordWebhookClient.Reset();
         
         var httpClient = new HttpClient(mockHandler.Object);
-        var client = DiscordWebhookClient.Get(httpClient, enableRateLimitHandling: true, maxRetries: 2);
+        var client = DiscordWebhookClient.Create(enableRateLimitHandling: true, maxRetries: 2, httpClient: httpClient);
         
         var webhookUrl = "https://discord.com/api/webhooks/123456789/abcdef";
         var message = new DiscordWebhookMessageBuilder()

@@ -14,66 +14,44 @@ namespace DiscordWebhookSender.Core;
 /// <summary>
 /// Client for sending Discord webhook messages.
 /// Provides functionality to send messages and embeds to Discord channels via webhooks.
-/// Implements the Singleton pattern to ensure only one instance exists.
+/// Uses a shared HttpClient to prevent socket exhaustion.
 /// </summary>
 public class DiscordWebhookClient : IDiscordWebhookClient
 {
-    private static DiscordWebhookClient? _instance;
-    private static readonly object Lock = new();
+    private static readonly HttpClient SharedHttpClient = new();
+    private static readonly JsonSerializerOptions SharedJsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
+    
     private readonly HttpClient _httpClient;
-    private readonly JsonSerializerOptions _jsonOptions;
     private readonly bool _enableRateLimitHandling; 
     private readonly int _maxRetries;
-
+    
     /// <summary>
-    /// Private constructor to prevent direct instantiation.
-    /// Use the Get() method to obtain the singleton instance.
+    /// Creates a new instance of DiscordWebhookClient.
     /// </summary>
-    /// <param name="httpClient">HttpClient instance. If not provided, a new instance will be created.</param>
-    /// <param name="enableRateLimitHandling">Indicates whether to enable rate limit handling. </param>
+    /// <param name="enableRateLimitHandling">Indicates whether to enable rate limit handling.</param>
     /// <param name="maxRetries">The maximum number of retries for sending a webhook in case of transient failures.</param>
-    private DiscordWebhookClient(HttpClient? httpClient, bool enableRateLimitHandling, int maxRetries)
+    /// <param name="httpClient">Optional HttpClient instance. If not provided, a shared HttpClient will be used.</param>
+    private DiscordWebhookClient(bool enableRateLimitHandling, int maxRetries, HttpClient? httpClient)
     {
-        _httpClient = httpClient ?? new HttpClient();
+        _httpClient = httpClient ?? SharedHttpClient;
         _enableRateLimitHandling = enableRateLimitHandling;
         _maxRetries = maxRetries;
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        };
     }
 
     /// <summary>
-    /// Gets the singleton instance of DiscordWebhookClient.
-    /// Creates a new instance if one doesn't exist.
+    /// Creates a new instance of DiscordWebhookClient with a custom HttpClient.
     /// </summary>
-    /// <param name="httpClient">Optional HttpClient instance. Only used when creating a new instance.</param>
-    /// <param name="enableRateLimitHandling">Indicates whether to enable rate limit handling. Only used when creating a new instance.</param>
-    /// <param name="maxRetries">The maximum number of retries for sending a webhook in case of transient failures. Only used when creating a new instance.</param>
-    /// <returns>The singleton instance of DiscordWebhookClient.</returns>
-    public static DiscordWebhookClient Get(HttpClient? httpClient = null, bool enableRateLimitHandling = true, int maxRetries = 3)
+    /// <param name="enableRateLimitHandling">Indicates whether to enable rate limit handling.</param>
+    /// <param name="maxRetries">The maximum number of retries for sending a webhook in case of transient failures.</param>
+    /// <param name="httpClient">Custom HttpClient instance.</param>
+    /// <returns>A new instance of DiscordWebhookClient.</returns>
+    public static DiscordWebhookClient Create(bool enableRateLimitHandling = true, int maxRetries = 3, HttpClient? httpClient = null)
     {
-        lock (Lock)
-        {
-            if (_instance != null) return _instance;
-            
-            _instance = new DiscordWebhookClient(httpClient, enableRateLimitHandling, maxRetries);
-            
-            return _instance;
-        }
-    }
-
-    /// <summary>
-    /// Resets the singleton instance. This method is primarily for testing purposes.
-    /// </summary>
-    public static void Reset()
-    {
-        lock (Lock)
-        {
-            _instance?._httpClient.Dispose();
-            _instance = null;
-        }
+        return new DiscordWebhookClient(enableRateLimitHandling, maxRetries, httpClient);
     }
 
     /// <summary>
@@ -155,12 +133,12 @@ public class DiscordWebhookClient : IDiscordWebhookClient
         DiscordValidator.ValidateWebhookUrl(webhookUrl);
         DiscordValidator.ValidateWebhookMessage(message);
 
-        var payload = JsonSerializer.Serialize(message, _jsonOptions);
+        var payload = JsonSerializer.Serialize(message, SharedJsonOptions);
         
         for (var i = 0; i < _maxRetries; i++)
         {
             using var content = new StringContent(payload, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync(webhookUrl, content, cancellationToken);
+            using var response = await _httpClient.PostAsync(webhookUrl, content, cancellationToken);
 
             if (response.IsSuccessStatusCode)
             {
@@ -182,7 +160,7 @@ public class DiscordWebhookClient : IDiscordWebhookClient
             throw new HttpRequestException($"Failed to send Discord webhook. Status: {(int)response.StatusCode}. Body: {errorBody}", null, response.StatusCode);
         }
         
-        throw new HttpRequestException($"Failed to send Discord webhook after {_maxRetries} attempts due to persistent errors.", null);
+        throw new HttpRequestException($"Failed to send Discord webhook after {_maxRetries} attempts due to persistent rate limiting or other transient errors.");
     }
     
     /// <summary>
