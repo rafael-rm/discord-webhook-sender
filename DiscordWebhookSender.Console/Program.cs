@@ -30,7 +30,7 @@ internal abstract class DiscordProgram
             .AddEmbed(embed)
             .Build();
 
-        var client = DiscordWebhookClient.Get();
+        var client = DiscordWebhookClient.Create();
         await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", message);
         await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", embed);
         await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", "This is a simple text message");
