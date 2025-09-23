@@ -477,7 +477,7 @@ public class DiscordWebhookClientIntegrationTests
         var exception = await Assert.ThrowsAnyAsync<Exception>(
             () => client.SendAsync(webhookUrl, message));
 
-        // Deve falhar com JsonException ao tentar deserializar o JSON inválido
+        // Should fail with JsonException when trying to deserialize invalid JSON
         Assert.True(exception is JsonException || exception is HttpRequestException);
     }
 
