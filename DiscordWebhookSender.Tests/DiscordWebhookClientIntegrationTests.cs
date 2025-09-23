@@ -235,7 +235,7 @@ public class DiscordWebhookClientIntegrationTests
         var rateLimitResponse = new DiscordRateLimitResponse
         {
             Message = "You are being rate limited.",
-            RetryAfterSeconds = 0.1, // 100ms para teste rápido
+            RetryAfterSeconds = 0.1, // 100ms for quick test
             IsGlobal = false
         };
 
