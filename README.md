@@ -15,9 +15,13 @@ A .NET library for sending Discord webhooks with rich embeds and message formatt
 - **Media Support**: Add images and thumbnails to embeds
 - **Author & Footer**: Customize embed author and footer information
 - **Timestamp Support**: Add timestamps to embeds
-- **Singleton Webhook Client**: Thread-safe singleton pattern to ensure only one HTTP client instance
+- **Shared HttpClient**: Uses a shared HttpClient instance to prevent socket exhaustion
+- **Instance-Based Architecture**: Create multiple client instances as needed without singleton constraints
 - **Discord API Validation**: Automatic validation of all Discord API limits and constraints
 - **Comprehensive Error Handling**: Detailed error messages for validation failures
+- **Automatic Rate Limit Handling**: Built-in support for Discord rate limiting with automatic retry and delay
+- **Configurable Rate Limit Behavior**: Option to enable or disable automatic rate limit handling
+- **Configurable Retry Logic**: Customizable maximum number of retries for transient failures
 
 ## Installation
 
@@ -25,13 +29,37 @@ A .NET library for sending Discord webhooks with rich embeds and message formatt
 dotnet add package DiscordWebhookSender
 ```
 
+## Architecture Changes
+
+This library has been updated to use an instance-based architecture instead of the singleton pattern. This change provides several benefits:
+
+- **Multiple Instances**: Create multiple client instances with different configurations
+- **Better Testability**: Easier to test with different configurations and mock objects
+- **Shared HttpClient**: Prevents socket exhaustion by using a shared HttpClient instance
+- **Flexibility**: Each instance can have its own HttpClient or use the shared one
+- **No Global State**: Eliminates potential issues with global state management
+
+### Migration from Singleton Pattern
+
+If you were using the previous singleton pattern, update your code as follows:
+
+```csharp
+// Old way (singleton)
+var client = DiscordWebhookClient.Get();
+
+// New way (instance-based)
+var client = DiscordWebhookClient.Create();
+```
+
+The API remains the same, only the creation method has changed.
+
 ## Quick Start
 
 ### Simple Text Message
 ```csharp
 using DiscordWebhookSender;
 
-var client = DiscordWebhookClient.Get();
+var client = DiscordWebhookClient.Create();
 await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", "Hello, Discord!");
 ```
 
@@ -46,7 +74,7 @@ var embed = new DiscordEmbedBuilder()
     .WithColor(DiscordEmbedColor.Green)
     .Build();
 
-var client = DiscordWebhookClient.Get();
+var client = DiscordWebhookClient.Create();
 await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", embed);
 ```
 
@@ -79,7 +107,7 @@ var message = new DiscordWebhookMessageBuilder()
     .Build();
 
 // Send the webhook
-var client = DiscordWebhookClient.Get();
+var client = DiscordWebhookClient.Create();
 await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", message);
 ```
 
@@ -87,11 +115,30 @@ await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", message);
 
 ### DiscordWebhookClient
 
-The main client for sending Discord webhooks. Implements the Singleton pattern to ensure only one instance exists.
+The main client for sending Discord webhooks. Uses a shared HttpClient to prevent socket exhaustion.
 
 #### Usage
 ```csharp
-var client = DiscordWebhookClient.Get();
+// Basic usage with default settings (rate limit handling enabled, 3 retries)
+var client = DiscordWebhookClient.Create();
+
+// With custom HttpClient
+var httpClient = new HttpClient();
+var client = DiscordWebhookClient.Create(httpClient);
+
+// With rate limit handling disabled
+var client = DiscordWebhookClient.Create(enableRateLimitHandling: false);
+
+// With custom retry count
+var client = DiscordWebhookClient.Create(maxRetries: 5);
+
+// With custom HttpClient, rate limit handling disabled, and custom retry count
+var httpClient = new HttpClient();
+var client = DiscordWebhookClient.Create(httpClient, enableRateLimitHandling: false, maxRetries: 2);
+
+// All parameters customized
+var httpClient = new HttpClient();
+var client = DiscordWebhookClient.Create(httpClient, enableRateLimitHandling: true, maxRetries: 10);
 ```
 
 #### Methods
@@ -181,6 +228,91 @@ catch (DiscordValidationException ex)
 }
 ```
 
+## Rate Limit Handling
+
+The library includes built-in support for Discord's rate limiting system. When enabled, the client automatically handles HTTP 429 (Too Many Requests) responses by:
+
+- **Automatic Detection**: Detects rate limit responses from Discord API
+- **Intelligent Delays**: Waits for the exact time specified in Discord's `retry_after` header
+- **Buffer Time**: Adds a small buffer (100ms) to ensure compliance with Discord's limits
+- **Automatic Retry**: Retries the request after the delay period
+- **Configurable**: Can be enabled or disabled based on your needs
+- **Customizable Retry Count**: Configure the maximum number of retry attempts for transient failures
+
+### Enabling/Disabling Rate Limit Handling
+
+By default, rate limit handling is **enabled**. You can control this behavior when creating the client:
+
+```csharp
+// Rate limit handling enabled (default) with 3 retries (default)
+var client = DiscordWebhookClient.Create();
+
+// Rate limit handling disabled
+var client = DiscordWebhookClient.Create(enableRateLimitHandling: false);
+
+// Custom retry count with rate limit handling enabled
+var client = DiscordWebhookClient.Create(maxRetries: 5);
+
+// Rate limit handling disabled with custom retry count
+var client = DiscordWebhookClient.Create(enableRateLimitHandling: false, maxRetries: 1);
+
+// With custom HttpClient, rate limit handling disabled, and custom retry count
+var httpClient = new HttpClient();
+var client = DiscordWebhookClient.Create(httpClient, enableRateLimitHandling: false, maxRetries: 2);
+```
+
+### Retry Configuration
+
+The library supports configurable retry logic for handling transient failures:
+
+- **Default Retries**: 3 attempts by default
+- **Custom Retry Count**: Set any number of retries (minimum 1)
+- **Rate Limit Retries**: Rate limit handling works independently of the retry count
+- **Failure Handling**: After exhausting all retries, throws `HttpRequestException`
+
+```csharp
+// Conservative approach - only 1 retry
+var client = DiscordWebhookClient.Create(maxRetries: 1);
+
+// Aggressive approach - 10 retries for high-reliability scenarios
+var client = DiscordWebhookClient.Create(maxRetries: 10);
+
+// No retries - fail fast on any error
+var client = DiscordWebhookClient.Create(maxRetries: 0);
+```
+
+### How It Works
+
+When a rate limit is encountered:
+
+1. The client receives an HTTP 429 response from Discord
+2. It parses the `retry_after` value from the response
+3. Waits for the specified duration plus a 100ms buffer
+4. Automatically retries the request
+5. If rate limit handling is disabled, the request fails immediately with an `HttpRequestException`
+
+For other transient failures (network issues, server errors):
+
+1. The client attempts the request
+2. If it fails with a transient error, it retries up to `maxRetries` times
+3. If all retries are exhausted, throws `HttpRequestException`
+
+### Rate Limit Response Structure
+
+The library automatically parses Discord's rate limit response:
+
+```json
+{
+  "message": "You are being rate limited.",
+  "retry_after": 1.5,
+  "global": false
+}
+```
+
+- `message`: Description of the rate limit
+- `retry_after`: Number of seconds to wait before retrying
+- `global`: Whether this is a global rate limit affecting all Discord API calls
+
 ## Additional Examples
 
 ### Complete Message with Multiple Embeds
@@ -203,7 +335,7 @@ var message = new DiscordWebhookMessageBuilder()
     .AddEmbed(embed1, embed2)
     .Build();
 
-var client = DiscordWebhookClient.Get();
+var client = DiscordWebhookClient.Create();
 await client.SendAsync(webhookUrl, message);
 ```
 
@@ -217,6 +349,106 @@ var embed = new DiscordEmbedBuilder()
     .AddField("Notes", "All systems operational", false)
     .WithTimestamp(DateTimeOffset.UtcNow)
     .Build();
+```
+
+### Rate Limit Handling Examples
+
+#### High-Volume Message Sending with Rate Limit Handling
+```csharp
+// Client with rate limit handling enabled (default)
+var client = DiscordWebhookClient.Create();
+
+// Send multiple messages - rate limits are handled automatically
+for (int i = 0; i < 100; i++)
+{
+    var message = new DiscordWebhookMessageBuilder()
+        .WithContent($"Message {i + 1}")
+        .Build();
+    
+    // If rate limited, the client will automatically wait and retry
+    await client.SendAsync(webhookUrl, message);
+}
+```
+
+#### Disabling Rate Limit Handling for Custom Logic
+```csharp
+// Client with rate limit handling disabled
+var client = DiscordWebhookClient.Create(enableRateLimitHandling: false);
+
+try
+{
+    await client.SendAsync(webhookUrl, message);
+}
+catch (HttpRequestException ex) when (ex.Message.Contains("429"))
+{
+    // Handle rate limiting manually
+    Console.WriteLine("Rate limited! Implementing custom retry logic...");
+    await Task.Delay(TimeSpan.FromSeconds(5));
+    // Retry or implement custom logic
+}
+```
+
+#### Custom Retry Configuration Examples
+
+#### High-Reliability Setup with Many Retries
+```csharp
+// Client configured for high-reliability scenarios
+var client = DiscordWebhookClient.Create(maxRetries: 10);
+
+try
+{
+    await client.SendAsync(webhookUrl, message);
+    Console.WriteLine("Message sent successfully!");
+}
+catch (HttpRequestException ex)
+{
+    Console.WriteLine($"Failed after 10 retries: {ex.Message}");
+}
+```
+
+#### Fast-Fail Setup for Real-Time Applications
+```csharp
+// Client configured to fail fast (no retries)
+var client = DiscordWebhookClient.Create(maxRetries: 0);
+
+try
+{
+    await client.SendAsync(webhookUrl, message);
+}
+catch (HttpRequestException ex)
+{
+    // Handle failure immediately - no retries attempted
+    Console.WriteLine("Message failed immediately: " + ex.Message);
+    // Implement fallback logic or user notification
+}
+```
+
+#### Conservative Retry Strategy
+```csharp
+// Conservative approach - only 1 retry attempt
+var client = DiscordWebhookClient.Create(maxRetries: 1);
+
+// This will attempt the request once, and if it fails, retry once more
+await client.SendAsync(webhookUrl, message);
+```
+
+#### Production Environment Configuration
+```csharp
+// Production setup with custom HttpClient and balanced retry strategy
+var httpClient = new HttpClient();
+httpClient.Timeout = TimeSpan.FromSeconds(30);
+
+var client = DiscordWebhookClient.Create(
+    httpClient: httpClient,
+    enableRateLimitHandling: true,
+    maxRetries: 5
+);
+
+// This configuration provides:
+// - Custom timeout for HTTP requests
+// - Rate limit handling enabled
+// - 5 retry attempts for transient failures
+// - Automatic rate limit compliance
 ```
 
 ## Requirements
