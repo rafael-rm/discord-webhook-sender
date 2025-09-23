@@ -416,7 +416,7 @@ public class DiscordWebhookClientIntegrationTests
         var rateLimitResponse = new DiscordRateLimitResponse
         {
             Message = "You are being rate limited.",
-            RetryAfterSeconds = 5.0, // 5 segundos para garantir que seja cancelado
+            RetryAfterSeconds = 5.0, // 5 seconds to ensure cancellation
             IsGlobal = false
         };
 
