@@ -357,7 +357,7 @@ public class DiscordWebhookClientIntegrationTests
         await client.SendAsync(webhookUrl, message);
 
         // Assert
-        Assert.Equal(2, callCount); // Deve ter retornado após o delay
+        Assert.Equal(2, callCount); // Should have returned after delay
     }
 
     [Fact]
