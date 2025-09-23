@@ -443,7 +443,7 @@ public class DiscordWebhookClientIntegrationTests
             });
 
         var cancellationTokenSource = new CancellationTokenSource();
-        cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(50)); // Cancela após 50ms
+        cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(50)); // Cancel after 50ms
 
         // Act & Assert
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
