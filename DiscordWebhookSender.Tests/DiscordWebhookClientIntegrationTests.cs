@@ -529,6 +529,6 @@ public class DiscordWebhookClientIntegrationTests
 
         // Assert
         Assert.Equal(2, callCount);
-        Assert.True(endTime - startTime < TimeSpan.FromMilliseconds(100)); // Deve ser muito rápido
+        Assert.True(endTime - startTime < TimeSpan.FromMilliseconds(100)); // Should be very fast
     }
 }
