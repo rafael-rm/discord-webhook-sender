@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using DiscordWebhookSender.Core;
+using DiscordWebhookSender.Core.DTO;
 using DiscordWebhookSender.Core.Models;
 using Moq;
 using Moq.Protected;
@@ -221,4 +222,318 @@ public class DiscordWebhookClientIntegrationTests
         Assert.True(deserializedMessage.Tts);
         Assert.Equal("https://example.com/avatar.png", deserializedMessage.AvatarUrl);
     }
-} 
+
+    [Fact]
+    public async Task SendAsync_WithRateLimitEnabled_ShouldRetryAfterDelay()
+    {
+        // Arrange
+        var mockHandler = new Mock<HttpMessageHandler>();
+        var client = CreateClient(mockHandler);
+        
+        var webhookUrl = "https://discord.com/api/webhooks/123456789/abcdef";
+        var message = new DiscordWebhookMessageBuilder()
+            .WithContent("Test message")
+            .Build();
+
+        var rateLimitResponse = new DiscordRateLimitResponse
+        {
+            Message = "You are being rate limited.",
+            RetryAfterSeconds = 0.1, // 100ms para teste rápido
+            IsGlobal = false
+        };
+
+        var rateLimitJson = JsonSerializer.Serialize(rateLimitResponse, _jsonOptions);
+
+        var callCount = 0;
+        mockHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    return new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+                    {
+                        Content = new StringContent(rateLimitJson, Encoding.UTF8, "application/json")
+                    };
+                }
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            });
+
+        // Act
+        var startTime = DateTime.UtcNow;
+        await client.SendAsync(webhookUrl, message);
+        var endTime = DateTime.UtcNow;
+
+        // Assert
+        Assert.Equal(2, callCount); // Primeira chamada retorna 429, segunda retorna sucesso
+        Assert.True(endTime - startTime >= TimeSpan.FromMilliseconds(100)); // Deve ter esperado pelo menos 100ms
+    }
+
+    [Fact]
+    public async Task SendAsync_WithRateLimitDisabled_ShouldNotRetryOn429()
+    {
+        // Arrange
+        var mockHandler = new Mock<HttpMessageHandler>();
+        DiscordWebhookClient.Reset();
+        
+        var httpClient = new HttpClient(mockHandler.Object);
+        var client = DiscordWebhookClient.Get(httpClient, enableRateLimitHandling: false);
+        
+        var webhookUrl = "https://discord.com/api/webhooks/123456789/abcdef";
+        var message = new DiscordWebhookMessageBuilder()
+            .WithContent("Test message")
+            .Build();
+
+        var rateLimitResponse = new DiscordRateLimitResponse
+        {
+            Message = "You are being rate limited.",
+            RetryAfterSeconds = 1.0,
+            IsGlobal = false
+        };
+
+        var rateLimitJson = JsonSerializer.Serialize(rateLimitResponse, _jsonOptions);
+
+        mockHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+            {
+                Content = new StringContent(rateLimitJson, Encoding.UTF8, "application/json")
+            });
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(
+            () => client.SendAsync(webhookUrl, message));
+
+        Assert.Contains("429", exception.Message);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithGlobalRateLimit_ShouldHandleCorrectly()
+    {
+        // Arrange
+        var mockHandler = new Mock<HttpMessageHandler>();
+        var client = CreateClient(mockHandler);
+        
+        var webhookUrl = "https://discord.com/api/webhooks/123456789/abcdef";
+        var message = new DiscordWebhookMessageBuilder()
+            .WithContent("Test message")
+            .Build();
+
+        var rateLimitResponse = new DiscordRateLimitResponse
+        {
+            Message = "You are being globally rate limited.",
+            RetryAfterSeconds = 0.1,
+            IsGlobal = true
+        };
+
+        var rateLimitJson = JsonSerializer.Serialize(rateLimitResponse, _jsonOptions);
+
+        var callCount = 0;
+        mockHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    return new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+                    {
+                        Content = new StringContent(rateLimitJson, Encoding.UTF8, "application/json")
+                    };
+                }
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            });
+
+        // Act
+        await client.SendAsync(webhookUrl, message);
+
+        // Assert
+        Assert.Equal(2, callCount); // Deve ter retornado após o delay
+    }
+
+    [Fact]
+    public async Task SendAsync_WithRateLimitAndMaxRetries_ShouldEventuallyFail()
+    {
+        // Arrange
+        var mockHandler = new Mock<HttpMessageHandler>();
+        DiscordWebhookClient.Reset();
+        
+        var httpClient = new HttpClient(mockHandler.Object);
+        var client = DiscordWebhookClient.Get(httpClient, enableRateLimitHandling: true, maxRetries: 2);
+        
+        var webhookUrl = "https://discord.com/api/webhooks/123456789/abcdef";
+        var message = new DiscordWebhookMessageBuilder()
+            .WithContent("Test message")
+            .Build();
+
+        var rateLimitResponse = new DiscordRateLimitResponse
+        {
+            Message = "You are being rate limited.",
+            RetryAfterSeconds = 0.1,
+            IsGlobal = false
+        };
+
+        var rateLimitJson = JsonSerializer.Serialize(rateLimitResponse, _jsonOptions);
+
+        mockHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+            {
+                Content = new StringContent(rateLimitJson, Encoding.UTF8, "application/json")
+            });
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(
+            () => client.SendAsync(webhookUrl, message));
+
+        Assert.Contains("Failed to send Discord webhook after 2 attempts", exception.Message);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithRateLimitAndCancellation_ShouldRespectCancellationToken()
+    {
+        // Arrange
+        var mockHandler = new Mock<HttpMessageHandler>();
+        var client = CreateClient(mockHandler);
+        
+        var webhookUrl = "https://discord.com/api/webhooks/123456789/abcdef";
+        var message = new DiscordWebhookMessageBuilder()
+            .WithContent("Test message")
+            .Build();
+
+        var rateLimitResponse = new DiscordRateLimitResponse
+        {
+            Message = "You are being rate limited.",
+            RetryAfterSeconds = 5.0, // 5 segundos para garantir que seja cancelado
+            IsGlobal = false
+        };
+
+        var rateLimitJson = JsonSerializer.Serialize(rateLimitResponse, _jsonOptions);
+
+        var callCount = 0;
+        mockHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    return new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+                    {
+                        Content = new StringContent(rateLimitJson, Encoding.UTF8, "application/json")
+                    };
+                }
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            });
+
+        var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(50)); // Cancela após 50ms
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => client.SendAsync(webhookUrl, message, cancellationTokenSource.Token));
+    }
+
+    [Fact]
+    public async Task SendAsync_WithInvalidRateLimitResponse_ShouldNotRetry()
+    {
+        // Arrange
+        var mockHandler = new Mock<HttpMessageHandler>();
+        var client = CreateClient(mockHandler);
+        
+        var webhookUrl = "https://discord.com/api/webhooks/123456789/abcdef";
+        var message = new DiscordWebhookMessageBuilder()
+            .WithContent("Test message")
+            .Build();
+
+        mockHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+            {
+                Content = new StringContent("Invalid JSON", Encoding.UTF8, "application/json")
+            });
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAnyAsync<Exception>(
+            () => client.SendAsync(webhookUrl, message));
+
+        // Deve falhar com JsonException ao tentar deserializar o JSON inválido
+        Assert.True(exception is JsonException || exception is HttpRequestException);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithZeroRetryAfter_ShouldNotDelay()
+    {
+        // Arrange
+        var mockHandler = new Mock<HttpMessageHandler>();
+        var client = CreateClient(mockHandler);
+        
+        var webhookUrl = "https://discord.com/api/webhooks/123456789/abcdef";
+        var message = new DiscordWebhookMessageBuilder()
+            .WithContent("Test message")
+            .Build();
+
+        var rateLimitResponse = new DiscordRateLimitResponse
+        {
+            Message = "Rate limit exceeded",
+            RetryAfterSeconds = 0, // Zero delay
+            IsGlobal = false
+        };
+
+        var rateLimitJson = JsonSerializer.Serialize(rateLimitResponse, _jsonOptions);
+
+        var callCount = 0;
+        mockHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    return new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+                    {
+                        Content = new StringContent(rateLimitJson, Encoding.UTF8, "application/json")
+                    };
+                }
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            });
+
+        // Act
+        var startTime = DateTime.UtcNow;
+        await client.SendAsync(webhookUrl, message);
+        var endTime = DateTime.UtcNow;
+
+        // Assert
+        Assert.Equal(2, callCount);
+        Assert.True(endTime - startTime < TimeSpan.FromMilliseconds(100)); // Deve ser muito rápido
+    }
+}
