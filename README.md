@@ -453,7 +453,7 @@ var client = DiscordWebhookClient.Create(
 
 ## Requirements
 
-- .NET 8.0 or .NET 9.0
+- .NET **10.0, 9.0, or 8.0** (any of these versions)
 - Internet connection for webhook requests
 
 ## License
