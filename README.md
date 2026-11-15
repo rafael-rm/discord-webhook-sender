@@ -1,6 +1,6 @@
 # Discord Webhook Sender
-[![NuGet Version](https://img.shields.io/nuget/v/DiscordWebhookSender.svg?style=flate&logo=nuget)](https://www.nuget.org/packages/DiscordWebhookSender)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/DiscordWebhookSender.svg?style=)](https://www.nuget.org/packages/DiscordWebhookSender)
+[![NuGet Version](https://img.shields.io/nuget/v/DiscordWebhookSender.svg?style=flat&logo=nuget)](https://www.nuget.org/packages/DiscordWebhookSender)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/DiscordWebhookSender.svg?style=flat)](https://www.nuget.org/packages/DiscordWebhookSender)
 
 A .NET library for sending Discord webhooks with rich embeds and message formatting. This library provides a simple and intuitive API for creating and sending Discord webhook messages with support for embeds, colors, fields, and more.
 
@@ -21,7 +21,7 @@ A .NET library for sending Discord webhooks with rich embeds and message formatt
 - **Comprehensive Error Handling**: Detailed error messages for validation failures
 - **Automatic Rate Limit Handling**: Built-in support for Discord rate limiting with automatic retry and delay
 - **Configurable Rate Limit Behavior**: Option to enable or disable automatic rate limit handling
-- **Configurable Retry Logic**: Customizable maximum number of retries for transient failures
+- **Configurable Retry Logic**: Configure the number of attempts when Discord returns HTTP 429
 
 ## Installation
 
@@ -57,7 +57,7 @@ The API remains the same, only the creation method has changed.
 
 ### Simple Text Message
 ```csharp
-using DiscordWebhookSender;
+using DiscordWebhookSender.Core;
 
 var client = DiscordWebhookClient.Create();
 await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", "Hello, Discord!");
@@ -65,8 +65,8 @@ await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", "Hello, Discord!");
 
 ### Simple Embed
 ```csharp
-using DiscordWebhookSender;
-using DiscordWebhookSender.Models;
+using DiscordWebhookSender.Core;
+using DiscordWebhookSender.Core.Models;
 
 var embed = new DiscordEmbedBuilder()
     .WithTitle("🚀 Deploy Completed!")
@@ -80,8 +80,8 @@ await client.SendAsync("YOUR_DISCORD_WEBHOOK_URL", embed);
 
 ### Advanced Message with Customization
 ```csharp
-using DiscordWebhookSender;
-using DiscordWebhookSender.Models;
+using DiscordWebhookSender.Core;
+using DiscordWebhookSender.Core.Models;
 
 // Create an embed
 var embed = new DiscordEmbedBuilder()
@@ -237,7 +237,7 @@ The library includes built-in support for Discord's rate limiting system. When e
 - **Buffer Time**: Adds a small buffer (100ms) to ensure compliance with Discord's limits
 - **Automatic Retry**: Retries the request after the delay period
 - **Configurable**: Can be enabled or disabled based on your needs
-- **Customizable Retry Count**: Configure the maximum number of retry attempts for transient failures
+- **Customizable Attempts**: Configure the maximum number of HTTP requests for rate-limited messages
 
 ### Enabling/Disabling Rate Limit Handling
 
@@ -263,22 +263,21 @@ var client = DiscordWebhookClient.Create(httpClient, enableRateLimitHandling: fa
 
 ### Retry Configuration
 
-The library supports configurable retry logic for handling transient failures:
+The `maxRetries` option limits the total HTTP attempts made while handling HTTP 429 responses. Other HTTP errors and transport failures are returned immediately and are not retried.
 
-- **Default Retries**: 3 attempts by default
-- **Custom Retry Count**: Set any number of retries (minimum 1)
-- **Rate Limit Retries**: Rate limit handling works independently of the retry count
-- **Failure Handling**: After exhausting all retries, throws `HttpRequestException`
+- **Default Attempts**: Up to 3 requests for rate-limited messages
+- **Custom Attempt Limit**: Set the maximum number of requests
+- **Disabled Rate Limit Handling**: A 429 response immediately throws `HttpRequestException`
+- **Failure Handling**: After exhausting the allowed attempts, throws `HttpRequestException`
 
 ```csharp
-// Conservative approach - only 1 retry
+// Allow one request attempt
 var client = DiscordWebhookClient.Create(maxRetries: 1);
 
-// Aggressive approach - 10 retries for high-reliability scenarios
+// Allow up to 10 HTTP attempts when handling rate limits
 var client = DiscordWebhookClient.Create(maxRetries: 10);
 
-// No retries - fail fast on any error
-var client = DiscordWebhookClient.Create(maxRetries: 0);
+
 ```
 
 ### How It Works
@@ -291,11 +290,7 @@ When a rate limit is encountered:
 4. Automatically retries the request
 5. If rate limit handling is disabled, the request fails immediately with an `HttpRequestException`
 
-For other transient failures (network issues, server errors):
-
-1. The client attempts the request
-2. If it fails with a transient error, it retries up to `maxRetries` times
-3. If all retries are exhausted, throws `HttpRequestException`
+Other HTTP errors, including server errors, and transport exceptions are not retried; they fail immediately with `HttpRequestException`.
 
 ### Rate Limit Response Structure
 
@@ -402,14 +397,14 @@ try
 }
 catch (HttpRequestException ex)
 {
-    Console.WriteLine($"Failed after 10 retries: {ex.Message}");
+    Console.WriteLine($"Webhook request failed: {ex.Message}");
 }
 ```
 
 #### Fast-Fail Setup for Real-Time Applications
 ```csharp
-// Client configured to fail fast (no retries)
-var client = DiscordWebhookClient.Create(maxRetries: 0);
+// Client configured for a single HTTP request attempt
+var client = DiscordWebhookClient.Create(maxRetries: 1);
 
 try
 {
@@ -425,10 +420,10 @@ catch (HttpRequestException ex)
 
 #### Conservative Retry Strategy
 ```csharp
-// Conservative approach - only 1 retry attempt
+// Allow one request attempt
 var client = DiscordWebhookClient.Create(maxRetries: 1);
 
-// This will attempt the request once, and if it fails, retry once more
+// A 429 response is not retried when the attempt limit is one
 await client.SendAsync(webhookUrl, message);
 ```
 
@@ -447,14 +442,22 @@ var client = DiscordWebhookClient.Create(
 // This configuration provides:
 // - Custom timeout for HTTP requests
 // - Rate limit handling enabled
-// - 5 retry attempts for transient failures
+// - Up to 5 total attempts when responses are HTTP 429
 // - Automatic rate limit compliance
 ```
 
-## Requirements
+## Supported Frameworks
 
-- .NET **10.0, 9.0, or 8.0** (any of these versions)
+- .NET **8.0, 9.0, 10.0, and 11.0**
 - Internet connection for webhook requests
+
+## Publishing
+
+Build and test jobs run automatically on pushes to `master`. Package publishing is manual:
+
+1. Open the repository's **Actions** tab and select **.NET Core Package**.
+2. Select **Run workflow** and choose `master`.
+3. The workflow builds and tests the code, then publishes the package to NuGet.org using Trusted Publishing.
 
 ## License
 
