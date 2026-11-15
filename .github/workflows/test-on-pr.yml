@@ -25,6 +25,11 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.0.x
+
+    - name: Setup .NET 11
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 11.0.x
         
     - name: Restore dependencies
       run: |
@@ -63,6 +68,11 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.0.x
+
+    - name: Setup .NET 11
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 11.0.x
         
     - name: Download build artifacts
       uses: actions/download-artifact@v4
@@ -71,4 +81,4 @@ jobs:
         path: .
         
     - name: Run tests
-      run: dotnet test --verbosity normal --configuration Release 
+      run: dotnet test --verbosity normal --configuration Release
