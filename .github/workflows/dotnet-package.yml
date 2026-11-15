@@ -32,9 +32,7 @@ jobs:
         dotnet-version: 11.0.x
         
     - name: Restore dependencies
-      run: |
-        dotnet nuget add source --username rafael-rm --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/rafael-rm/index.json"
-        dotnet restore
+      run: dotnet restore
       
     - name: Build
       run: dotnet build -c Release
@@ -86,6 +84,9 @@ jobs:
   package:
     needs: [build, test]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     
     steps:
     - uses: actions/checkout@v3
@@ -115,10 +116,16 @@ jobs:
       with:
         name: build-artifacts
         path: .
+
+    - name: NuGet login (OIDC → temporary API key)
+      uses: NuGet/login@v1
+      id: nuget-login
+      with:
+        user: ${{ secrets.NUGET_USER }}
     
     - name: Push to nuget.org
       run: |
         dotnet nuget push **/*.nupkg \
-          --api-key ${{ secrets.NUGET_API_KEY }} \
+          --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} \
           --source https://api.nuget.org/v3/index.json \
           --skip-duplicate
