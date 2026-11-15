@@ -61,4 +61,9 @@ public static class DiscordLimits
     /// This includes title, description, field names, field values, footer text, and author name.
     /// </summary>
     public const int MaxTotalEmbedLength = 6000;
-} 
+
+    /// <summary>
+    /// Maximum RGB color value accepted by Discord embeds.
+    /// </summary>
+    public const int MaxColorValue = 0xFFFFFF;
+}

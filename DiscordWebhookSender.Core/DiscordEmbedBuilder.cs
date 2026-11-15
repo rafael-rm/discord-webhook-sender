@@ -58,7 +58,7 @@ public class DiscordEmbedBuilder
     
     /// <summary>
     /// Sets the timestamp of the embed using a DateTime value.
-    /// /// </summary>
+    /// </summary>
     /// <param name="dateTime">The DateTime to convert to a DateTimeOffset for the embed timestamp.</param>
     /// <returns>The current DiscordEmbedBuilder instance for method chaining.</returns>
     public DiscordEmbedBuilder WithTimestamp(DateTime dateTime)
@@ -99,7 +99,7 @@ public class DiscordEmbedBuilder
     {
         DiscordValidator.ValidateHexColor(hexColor);
         
-        var hex = hexColor.TrimStart('#');
+        var hex = hexColor.StartsWith('#') ? hexColor[1..] : hexColor;
         var colorInt = int.Parse(hex, System.Globalization.NumberStyles.HexNumber);
         _embed.Color = colorInt;
         return this;
