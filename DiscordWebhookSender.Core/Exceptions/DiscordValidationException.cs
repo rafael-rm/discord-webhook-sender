@@ -39,4 +39,5 @@ public enum DiscordValidationError
     ContentTooLong,
     UsernameTooLong,
     TooManyEmbeds,
+    InvalidColor,
 }

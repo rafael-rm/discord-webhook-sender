@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -33,7 +32,7 @@ public class DiscordWebhookClient : IDiscordWebhookClient
     /// Creates a new instance of DiscordWebhookClient.
     /// </summary>
     /// <param name="enableRateLimitHandling">Indicates whether to enable rate limit handling.</param>
-    /// <param name="maxRetries">The maximum number of retries for sending a webhook in case of transient failures.</param>
+    /// <param name="maxRetries">The maximum number of total HTTP attempts for HTTP 429 responses. A value of 0 still sends the initial request.</param>
     /// <param name="httpClient">Optional HttpClient instance. If not provided, a shared HttpClient will be used.</param>
     private DiscordWebhookClient(bool enableRateLimitHandling, int maxRetries, HttpClient? httpClient)
     {
@@ -46,11 +45,16 @@ public class DiscordWebhookClient : IDiscordWebhookClient
     /// Creates a new instance of DiscordWebhookClient with a custom HttpClient.
     /// </summary>
     /// <param name="enableRateLimitHandling">Indicates whether to enable rate limit handling.</param>
-    /// <param name="maxRetries">The maximum number of retries for sending a webhook in case of transient failures.</param>
+    /// <param name="maxRetries">The maximum number of total HTTP attempts for HTTP 429 responses. A value of 0 still sends the initial request.</param>
     /// <param name="httpClient">Custom HttpClient instance.</param>
     /// <returns>A new instance of DiscordWebhookClient.</returns>
     public static DiscordWebhookClient Create(bool enableRateLimitHandling = true, int maxRetries = 3, HttpClient? httpClient = null)
     {
+        if (maxRetries < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxRetries), maxRetries, "maxRetries must be zero or greater.");
+        }
+
         return new DiscordWebhookClient(enableRateLimitHandling, maxRetries, httpClient);
     }
 
@@ -117,7 +121,7 @@ public class DiscordWebhookClient : IDiscordWebhookClient
     /// <para>
     /// Validates the webhook URL and message before sending. Handles rate limiting
     /// (HTTP 429) automatically if <see cref="_enableRateLimitHandling"/> is enabled.
-    /// Retries the request up to <see cref="_maxRetries"/> times in case of transient failures.
+    /// Retries requests only after HTTP 429 responses when rate limit handling is enabled.
     /// </para>
     /// </summary>
     /// <param name="webhookUrl">The Discord webhook URL to send the message to.</param>
@@ -126,7 +130,7 @@ public class DiscordWebhookClient : IDiscordWebhookClient
     /// <exception cref="DiscordValidationException">Thrown when the webhook URL or message fails validation.</exception>
     /// <exception cref="HttpRequestException">
     /// Thrown when the HTTP request fails, returns an error status code, or
-    /// exceeds the maximum number of retries.
+    /// remains rate limited through the configured attempts.
     /// </exception>
     private async Task ProcessWebhookAsync(string webhookUrl, DiscordWebhookMessage message, CancellationToken cancellationToken = default)
     {
@@ -135,7 +139,8 @@ public class DiscordWebhookClient : IDiscordWebhookClient
 
         var payload = JsonSerializer.Serialize(message, SharedJsonOptions);
         
-        for (var i = 0; i < _maxRetries; i++)
+        var maxAttempts = Math.Max(1, _maxRetries);
+        for (var i = 0; i < maxAttempts; i++)
         {
             using var content = new StringContent(payload, Encoding.UTF8, "application/json");
             using var response = await _httpClient.PostAsync(webhookUrl, content, cancellationToken);
@@ -147,6 +152,11 @@ public class DiscordWebhookClient : IDiscordWebhookClient
 
             if (response.StatusCode == HttpStatusCode.TooManyRequests && _enableRateLimitHandling)
             {
+                if (i == maxAttempts - 1)
+                {
+                    break;
+                }
+
                 await HandleRateLimitAsync(response, cancellationToken); // TODO: Global rate limit handling strategy for parallel requests
                 continue;
             }
@@ -160,7 +170,7 @@ public class DiscordWebhookClient : IDiscordWebhookClient
             throw new HttpRequestException($"Failed to send Discord webhook. Status: {(int)response.StatusCode}. Body: {errorBody}", null, response.StatusCode);
         }
         
-        throw new HttpRequestException($"Failed to send Discord webhook after {_maxRetries} attempts due to persistent rate limiting or other transient errors.");
+        throw new HttpRequestException($"Failed to send Discord webhook after {maxAttempts} attempts due to persistent rate limiting.");
     }
     
     /// <summary>

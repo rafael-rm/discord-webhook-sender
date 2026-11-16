@@ -32,6 +32,11 @@ public static class DiscordValidator
                 $"Current length: {message.Username.Length} characters.");
         }
 
+        if (!string.IsNullOrEmpty(message.AvatarUrl))
+        {
+            ValidateUrl(message.AvatarUrl, "Avatar URL");
+        }
+
         if (message.Embeds != null)
         {
             if (message.Embeds.Count > DiscordLimits.MaxEmbedsPerMessage)
@@ -57,6 +62,12 @@ public static class DiscordValidator
     {
         if (embed is null)
             throw new DiscordValidationException(DiscordValidationError.NullEmbed, "Embed cannot be null.");
+
+        if (embed.Color is < 0 or > DiscordLimits.MaxColorValue)
+        {
+            throw new DiscordValidationException(DiscordValidationError.InvalidColor,
+                $"Embed color must be between 0 and {DiscordLimits.MaxColorValue}.");
+        }
 
         var totalLength = 0;
 
@@ -220,11 +231,15 @@ public static class DiscordValidator
     /// Validates the webhook URL.
     /// </summary>
     /// <param name="webhookUrl">The webhook URL to validate.</param>
-    /// <exception cref="DiscordValidationException">Thrown when the webhook URL is null, empty, or whitespace.</exception>
+    /// <exception cref="DiscordValidationException">Thrown when the webhook URL is not a valid absolute HTTP or HTTPS URL.</exception>
     public static void ValidateWebhookUrl(string webhookUrl)
     {
-        if (string.IsNullOrWhiteSpace(webhookUrl))
-            throw new DiscordValidationException(DiscordValidationError.InvalidUrl, "Webhook URL cannot be null, empty, or whitespace.");
+        if (!Uri.TryCreate(webhookUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new DiscordValidationException(DiscordValidationError.InvalidUrl,
+                "Webhook URL must be a valid absolute HTTP or HTTPS URL.");
+        }
     }
 
     /// <summary>
@@ -237,9 +252,9 @@ public static class DiscordValidator
         if (string.IsNullOrWhiteSpace(hexColor))
             throw new DiscordValidationException(DiscordValidationError.InvalidHexColor, "Hex color cannot be null or whitespace.");
 
-        var hex = hexColor.TrimStart('#');
+        var hex = hexColor.StartsWith('#') ? hexColor[1..] : hexColor;
 
-        if (!int.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out _))
+        if (hex.Length != 6 || !hex.All(Uri.IsHexDigit))
             throw new DiscordValidationException(DiscordValidationError.InvalidHexColor, $"Invalid hex color format: '{hexColor}'. Expected format: '#RRGGBB' or 'RRGGBB'.");
     }
-} 
+}
